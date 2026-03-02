@@ -138,8 +138,6 @@ function drawVideoCover(ctx, video, w, h) {
 }
 
 function takeCompositePhoto(videoEl, outCanvas, cardEl, overlayCanvas) {
-  if (!cardEl) throw new Error("No se encontró .player-card");
-
   const rect = cardEl.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const w = Math.max(1, Math.floor(rect.width * dpr));
@@ -202,19 +200,14 @@ function setupPhotoPage() {
     try {
       const cardEl = document.querySelector(".player-card");
       const overlay = window.ARPhoto?.canvas || null;
+
       const dataUrl = takeCompositePhoto(video, canvas, cardEl, overlay);
       sessionStorage.setItem("capturedPhoto", dataUrl);
       window.location.href = encodeURI("Pantalla Foto Capturada.html");
     } catch (e) {
       console.error(e);
-      alert("Aún no está lista la cámara o el modelo. Intenta de nuevo.");
+      alert("Aún no está lista la cámara/modelo. Intenta de nuevo.");
     }
-  });
-
-  const stop = () => window.CameraUtils.stopCamera(video);
-  window.addEventListener("beforeunload", stop);
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) stop();
   });
 }
 

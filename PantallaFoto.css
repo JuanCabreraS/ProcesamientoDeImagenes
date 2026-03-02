@@ -325,3 +325,35 @@ body.effects-on .emote-pill{
 .player-card.is-live .player-number{
   display: none;
 }
+
+.camera-video{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.ar-canvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Solo overlays arriba (NO tocar video/canvas) */
+.player-card > :not(.camera-video):not(.ar-canvas){
+  position: relative;
+  z-index: 2;
+}
+
+.hidden-canvas{
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
