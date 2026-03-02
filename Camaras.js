@@ -203,40 +203,12 @@ function setupCapturedPage() {
     window.CameraUtils.downloadDataURL(dataUrl, "foto_fifar.png");
   });
 
-  async function webShare() {
-    if (!navigator.share) return false;
-    try {
-      const blob = window.CameraUtils.dataURLToBlob(dataUrl);
-      const file = new File([blob], "foto_fifar.png", { type: blob.type });
-      await navigator.share({ title: "FIFA.R", text: "Mira mi foto", files: [file] });
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
+  const shareButtons = [shareFb, shareWa, shareIg, shareTw].filter(Boolean);
 
-  function openShare(url) {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
-
-  shareFb?.addEventListener("click", async () => {
-    if (await webShare()) return;
-    openShare("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(location.href));
-  });
-
-  shareWa?.addEventListener("click", async () => {
-    if (await webShare()) return;
-    openShare("https://wa.me/?text=" + encodeURIComponent("Mira mi foto FIFA.R: " + location.href));
-  });
-
-  shareIg?.addEventListener("click", async () => {
-    if (await webShare()) return;
-    alert("Instagram web no permite compartir directo aquí. Descarga la imagen y compártela desde tu galería.");
-    window.CameraUtils.downloadDataURL(dataUrl, "foto_fifar.png");
-  });
-
-  shareTw?.addEventListener("click", async () => {
-    if (await webShare()) return;
-    openShare("https://twitter.com/intent/tweet?text=" + encodeURIComponent("Mi foto FIFA.R") + "&url=" + encodeURIComponent(location.href));
+  shareButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   });
 }
