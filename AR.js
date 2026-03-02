@@ -31,31 +31,36 @@ if (canvas && card) {
   const loader = new GLTFLoader();
   let model = null;
 
-  loader.load(MODEL_URL, (gltf) => {
-  model = gltf.scene;
-  scene.add(model);
+  loader.load(MODEL_URL,(gltf) => {
+      model = gltf.scene;
+      scene.add(model);
 
-  const box = new THREE.Box3().setFromObject(model);
-  const size = new THREE.Vector3();
-  const center = new THREE.Vector3();
-  box.getSize(size);
-  box.getCenter(center);
+      const box = new THREE.Box3().setFromObject(model);
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(center);
 
-  model.position.x += (model.position.x - center.x);
-  model.position.y += (model.position.y - center.y);
-  model.position.z += (model.position.z - center.z);
+      model.position.x += (model.position.x - center.x);
+      model.position.y += (model.position.y - center.y);
+      model.position.z += (model.position.z - center.z);
 
-  const targetHeight = 1.6;
-  const scale = targetHeight / (size.y || 1);
-  model.scale.setScalar(scale);
+      const targetHeight = 1.6;
+      const scale = targetHeight / (size.y || 1);
+      model.scale.setScalar(scale);
 
-  const box2 = new THREE.Box3().setFromObject(model);
-  const size2 = new THREE.Vector3();
-  box2.getSize(size2);
+      const box2 = new THREE.Box3().setFromObject(model);
+      const size2 = new THREE.Vector3();
+      box2.getSize(size2);
 
-  camera.position.set(0, 0, Math.max(2.2, size2.length() * 1.1));
-  camera.lookAt(0, 0, 0);
-});
+      camera.position.set(0, 0, Math.max(2.2, size2.length() * 1.1));
+      camera.lookAt(0, 0, 0);
+
+      console.log("✅ GLB cargado:", MODEL_URL);
+    },
+    undefined,
+    (err) => console.error("❌ Error cargando GLB:", MODEL_URL, err)
+  );
 
   function resizeToCard() {
     const rect = card.getBoundingClientRect();

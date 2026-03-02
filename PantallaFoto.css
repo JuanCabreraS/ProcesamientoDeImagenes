@@ -274,9 +274,27 @@ body.effects-on .emote-pill{
   z-index: 0;
 }
 
-.player-card > *{
+.player-card > :not(.camera-video):not(.ar-canvas){
   position: relative;
   z-index: 2;
+}
+
+.camera-video{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.ar-canvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .player-card.is-live{
@@ -320,4 +338,8 @@ body.effects-on .emote-pill{
   height: 100%;
   z-index: 1;
   pointer-events: none;
+}
+
+.player-card.is-live .player-number{
+  display: none;
 }
