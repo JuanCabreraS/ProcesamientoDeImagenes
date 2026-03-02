@@ -118,6 +118,49 @@ function setupPlayerPage() {
 }
 
 //Pantalla Foto
+function drawVideoCover(ctx, video, w, h) {
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  const vr = vw / vh;
+  const cr = w / h;
+
+  let sx = 0, sy = 0, sw = vw, sh = vh;
+
+  if (vr > cr) {
+    sw = vh * cr;
+    sx = (vw - sw) / 2;
+  } else {
+    sh = vw / cr;
+    sy = (vh - sh) / 2;
+  }
+
+  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, w, h);
+}
+
+function takeCompositePhoto(videoEl, outCanvas, cardEl, overlayCanvas) {
+  if (!cardEl) throw new Error("No se encontró .player-card");
+
+  const rect = cardEl.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.max(1, Math.floor(rect.width * dpr));
+  const h = Math.max(1, Math.floor(rect.height * dpr));
+
+  outCanvas.width = w;
+  outCanvas.height = h;
+
+  const ctx = outCanvas.getContext("2d", { willReadFrequently: true });
+
+  drawVideoCover(ctx, videoEl, w, h);
+
+  if (overlayCanvas) {
+    window.ARPhoto?.resizeTo?.();
+    window.ARPhoto?.renderOnce?.();
+    ctx.drawImage(overlayCanvas, 0, 0, w, h);
+  }
+
+  return outCanvas.toDataURL("image/png");
+}
+
 function setupPhotoPage() {
   const video = document.getElementById("photoVideo");
   if (!video) return;
@@ -157,12 +200,14 @@ function setupPhotoPage() {
 
   shutter?.addEventListener("click", () => {
     try {
-      const dataUrl = window.CameraUtils.takeSnapshot(video, canvas, { mime: "image/png" });
+      const cardEl = document.querySelector(".player-card");
+      const overlay = window.ARPhoto?.canvas || null;
+      const dataUrl = takeCompositePhoto(video, canvas, cardEl, overlay);
       sessionStorage.setItem("capturedPhoto", dataUrl);
       window.location.href = encodeURI("Pantalla Foto Capturada.html");
     } catch (e) {
       console.error(e);
-      alert("Aún no está lista la cámara, intenta de nuevo.");
+      alert("Aún no está lista la cámara o el modelo. Intenta de nuevo.");
     }
   });
 

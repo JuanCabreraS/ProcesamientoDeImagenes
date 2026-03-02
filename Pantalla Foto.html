@@ -38,6 +38,7 @@
         <div class="preview-wrap">
           <div class="player-card" aria-label="Tarjeta del jugador">
             <video id="photoVideo" class="camera-video" autoplay playsinline muted></video>
+            <canvas id="arCanvas" class="ar-canvas"></canvas>
             <div id="emotePill" class="emote-pill" aria-hidden="true">
               <span class="emote-pill__icon" aria-hidden="true"></span>
               <span class="emote-pill__text">Emote</span>
@@ -168,6 +169,7 @@
   </script>
   <canvas id="photoCanvas" class="hidden-canvas" aria-hidden="true"></canvas>
   <script src="Usar_camara.js" defer></script>
+  <script type="module" src="AR.js"></script>
   <script src="Camaras.js" defer></script>
 </body>
 </html>
