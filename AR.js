@@ -116,7 +116,7 @@ if (!canvas || !card) {
       }
 
       // 3) escala (ajusta targetHeight para más grande/chico)
-      const targetHeight = 0.1; // <-- cambia: 2.2 más grande, 1.2 más chico
+      const targetHeight = 1.8; // <-- cambia: 2.2 más grande, 1.2 más chico
       {
         const box = new THREE.Box3().setFromObject(model);
         const size = box.getSize(new THREE.Vector3());
@@ -140,7 +140,7 @@ if (!canvas || !card) {
         const fov = THREE.MathUtils.degToRad(camera.fov);
         let distance = (maxDim / 2) / Math.tan(fov / 2);
 
-        distance *= 5.0; // margen (sube a 1.3 si lo recorta, baja a 1.0 si lo quieres más grande)
+        distance *= 1.15; // margen (sube a 1.3 si lo recorta, baja a 1.0 si lo quieres más grande)
 
         camera.position.set(0, 0, distance);
         camera.near = Math.max(0.01, distance / 100);
@@ -149,8 +149,10 @@ if (!canvas || !card) {
         camera.lookAt(0, 0, 0);
       }
 
-      //model.position.y += 0.10; // sube
-      model.position.y -= 0.004; // baja
+      /* Si aún lo ves un poco arriba/abajo, ajusta con un “nudge”:
+      model.position.y += 0.10; // sube
+      model.position.y -= 0.10; // baja
+*/
 
       scene.remove(testCube);
 
