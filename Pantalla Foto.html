@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tomar Foto</title>
+
+  <link rel="stylesheet" href="PantallaFoto.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-foto">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla para tomar foto">
+
+      <header class="topbar">
+        <button class="nav-btn" type="button" aria-label="Regresar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 6 9 12l6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="topbar__center">
+          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+        </div>
+
+        <button class="nav-btn" type="button" aria-label="Inicio" data-home>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3.2 3.5 10.2a1 1 0 0 0-.36.77V20a1.5 1.5 0 0 0 1.5 1.5H9a1 1 0 0 0 1-1v-5h4v5a1 1 0 0 0 1 1h4.36A1.5 1.5 0 0 0 20.86 20v-9.03a1 1 0 0 0-.36-.77L12 3.2Z"
+                  fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="preview-area" aria-label="Vista previa">
+
+        <div class="preview-wrap">
+          <div class="player-card" aria-label="Tarjeta del jugador">
+            <video id="photoVideo" class="camera-video" autoplay playsinline muted></video>
+            <div id="emotePill" class="emote-pill" aria-hidden="true">
+              <span class="emote-pill__icon" aria-hidden="true"></span>
+              <span class="emote-pill__text">Emote</span>
+            </div>
+
+            <div class="player-number">10</div>
+            <div class="player-pill">Neymar JR</div>
+
+          </div>
+
+          <div class="emote-stack" aria-label="Emotes">
+            <button class="emote-btn" type="button" data-label="Celebración" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 4h8v2a4 4 0 0 1-8 0V4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M6 6H4a3 3 0 0 0 3 3M18 6h2a3 3 0 0 1-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M10 14h4M9 20h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M12 10v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+            <button class="emote-btn" type="button" data-label="Sonrisa" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 14c1.2 1.6 3 2.5 5 2.5S15.8 15.6 17 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M9 10h.01M15 10h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </button>
+
+            <button class="emote-btn" type="button" data-label="Energía" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M13 2 4 14h7l-1 8 10-14h-7l0-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <button class="emote-btn" type="button" data-label="Corazón" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"
+                      fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <section class="capture-panel" aria-label="Panel de captura">
+        <div class="capture-row">
+          <button id="effectsBtn" class="effects-btn" type="button" aria-pressed="false">
+            <span class="spark" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2l1.2 5.2L18 9l-4.8 1.8L12 16l-1.2-5.2L6 9l4.8-1.8L12 2Z"
+                      fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span id="effectsLabel">Efectos OFF</span>
+          </button>
+
+          <button id="switchCamBtn" class="switchcam-btn" type="button">Cambiar cámara</button>
+        </div>
+
+        <button id="shutterBtn" class="shutter" type="button" aria-label="Tomar foto">
+          <span class="shutter-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 7 10.2 5.5h3.6L15 7h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+          </span>
+        </button>
+
+        <div class="hint">Toca para capturar foto</div>
+      </section>
+
+    </section>
+  </main>
+
+  <script>
+    const effectsBtn = document.getElementById("effectsBtn");
+    const effectsLabel = document.getElementById("effectsLabel");
+
+    effectsBtn?.addEventListener("click", () => {
+      const isOn = document.body.classList.toggle("effects-on");
+      effectsBtn.setAttribute("aria-pressed", String(isOn));
+      effectsLabel.textContent = isOn ? "Efectos ON" : "Efectos OFF";
+    });
+
+    const emoteButtons = Array.from(document.querySelectorAll(".emote-btn"));
+    const emotePill = document.getElementById("emotePill");
+    const emotePillIcon = emotePill?.querySelector(".emote-pill__icon");
+    const emotePillText = emotePill?.querySelector(".emote-pill__text");
+
+    function clearEmotes() {
+      emoteButtons.forEach(b => {
+        b.classList.remove("is-active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      if (emotePill) {
+        emotePill.classList.remove("is-visible");
+        emotePill.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    emoteButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const isActive = btn.classList.contains("is-active");
+
+        if (isActive) {
+          clearEmotes();
+          return;
+        }
+
+        clearEmotes();
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+
+        const label = btn.dataset.label || "Emote";
+        const svg = btn.querySelector("svg");
+
+        if (emotePill && emotePillIcon && emotePillText) {
+          emotePillIcon.innerHTML = svg ? svg.outerHTML : "";
+          emotePillText.textContent = label;
+          emotePill.classList.add("is-visible");
+          emotePill.setAttribute("aria-hidden", "false");
+        }
+      });
+    });
+  </script>
+  <canvas id="photoCanvas" class="hidden-canvas" aria-hidden="true"></canvas>
+  <script src="Usar_camara.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>

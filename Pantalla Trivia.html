@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Trivia</title>
+
+  <link rel="stylesheet" href="PantallaTrivia.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-trivia">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla de Trivia">
+
+      <div class="panel">
+        <header class="topbar">
+
+          <div class="topbar__center">
+          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+          </div>
+
+          <button class="icon-btn" type="button" aria-label="Inicio" data-home>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.2 3.5 10.2a1 1 0 0 0-.36.77V20a1.5 1.5 0 0 0 1.5 1.5H9a1 1 0 0 0 1-1v-5h4v5a1 1 0 0 0 1 1h4.36A1.5 1.5 0 0 0 20.86 20v-9.03a1 1 0 0 0-.36-.77L12 3.2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="panel__inner">
+
+          <div class="score-wrap" aria-label="Puntaje">
+            <div class="score-circle">
+              <span class="score-number">10</span>
+            </div>
+
+            <div class="player">
+              <div class="player__name">Neymar Jr</div>
+              <div class="player__country">Brasil</div>
+
+              <div class="pager" aria-label="Indicador de páginas">
+                <span class="dot dot--active"></span>
+                <span class="dot"></span>
+              </div>
+            </div>
+          </div>
+
+          <section class="card" aria-label="Pregunta">
+            <div class="card__meta">Pregunta 1 de 2</div>
+            <h2 class="card__question">Pregunta 1</h2>
+
+            <div class="answers" role="list">
+              <button class="answer" type="button" role="listitem">Respuesta 1</button>
+              <button class="answer" type="button" role="listitem">Respuesta 2</button>
+              <button class="answer" type="button" role="listitem">Respuesta 3</button>
+              <button class="answer" type="button" role="listitem">Respuesta 4</button>
+            </div>
+          </section>
+
+          <div class="bottom">
+            <button class="confirm" type="button" disabled>Confirmar Respuesta</button>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+  <script src="Usar_camara.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>

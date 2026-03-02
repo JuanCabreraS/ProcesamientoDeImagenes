@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Jugador Desbloqueado</title>
+
+  <link rel="stylesheet" href="PantallaJugador.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-player">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla Jugador Desbloqueado">
+
+      <div class="panel">
+
+        <header class="topbar">
+          <div class="topbar__center">
+          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+          </div>
+
+          <button class="icon-btn" type="button" aria-label="Inicio" data-home>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.2 3.5 10.2a1 1 0 0 0-.36.77V20a1.5 1.5 0 0 0 1.5 1.5H9a1 1 0 0 0 1-1v-5h4v5a1 1 0 0 0 1 1h4.36A1.5 1.5 0 0 0 20.86 20v-9.03a1 1 0 0 0-.36-.77L12 3.2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="panel__inner panel__inner--player">
+
+          <div class="player-head">
+            <div class="jersey-circle" aria-label="Número del jugador">
+              <span class="jersey-number">10</span>
+            </div>
+
+            <div class="player-info">
+              <div class="player-name">Neymar JR</div>
+              <div class="player-meta">Brasil • Delantero</div>
+
+              <div class="rating-pill" aria-label="Rating">
+                <span class="rating-ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5Z"
+                          fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span>Rating: 00</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="divider" />
+
+          <h2 class="section-title">Estadísticas</h2>
+
+          <div class="stats-grid" role="list">
+            <div class="stat-card" role="listitem">
+              <div class="stat-ic" aria-hidden="true">🎯</div>
+              <div class="stat-value">000</div>
+              <div class="stat-label">Goles</div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-ic" aria-hidden="true">🎖️</div>
+              <div class="stat-value">000</div>
+              <div class="stat-label">Asistencias</div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-ic" aria-hidden="true">⚽</div>
+              <div class="stat-value">000</div>
+              <div class="stat-label">Partidos</div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-ic" aria-hidden="true">🏆</div>
+              <div class="stat-value">000</div>
+              <div class="stat-label">Trofeos</div>
+            </div>
+          </div>
+
+          <h2 class="section-title section-title--mt">Curiosidades</h2>
+
+          <div class="facts">
+            <div class="fact">
+              <div class="fact-badge">1</div>
+              <div class="fact-text">Curiosidad 1</div>
+            </div>
+
+            <div class="fact">
+              <div class="fact-badge">2</div>
+              <div class="fact-text">Curiosidad 2</div>
+            </div>
+
+            <div class="fact">
+              <div class="fact-badge">3</div>
+              <div class="fact-text">Curiosidad 3</div>
+            </div>
+          </div>
+
+          <div class="cta-wrap">
+            <button class="cta-btn" type="button">Tomar Foto con Jugador</button>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+  <script src="Usar_camara.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>

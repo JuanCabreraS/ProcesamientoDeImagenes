@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Foto Capturada</title>
+
+  <link rel="stylesheet" href="PantallaFotoCapturada.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-capturada">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla Foto Capturada">
+
+      <div class="panel">
+        <header class="topbar">
+          <div class="topbar__center">
+          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+          </div>
+
+          <button class="icon-btn" type="button" aria-label="Inicio" data-home>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.2 3.5 10.2a1 1 0 0 0-.36.77V20a1.5 1.5 0 0 0 1.5 1.5H9a1 1 0 0 0 1-1v-5h4v5a1 1 0 0 0 1 1h4.36A1.5 1.5 0 0 0 20.86 20v-9.03a1 1 0 0 0-.36-.77L12 3.2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="panel__inner panel__inner--capturada">
+          <div class="photo-stage" aria-label="Foto resultante">
+            <div class="photo-inner">
+              <img id="resultImg" class="result-img" alt="Foto capturada">
+              <div class="player-card" aria-label="Jugador en foto">
+                <div class="player-number">10</div>
+                <div class="player-pill">Neymar JR</div>
+              </div>
+
+              <button class="mini-btn" type="button" aria-label="Perfil del jugador">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-7 2-7 5v1h14v-1c0-3-3-5-7-5Z"
+                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <section class="promo" aria-label="Promoción">
+            <div class="promo__title">Comparte y Gana Premios</div>
+            <div class="promo__sub">Increíbles premios te esperan</div>
+          </section>
+
+          <section class="share" aria-label="Opciones de compartir">
+            <div class="share__head">
+              <span class="share__ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M16 8a3 3 0 1 0-2.82-4H13a3 3 0 0 0 3 4ZM6 14a3 3 0 1 0-2.82-4H3a3 3 0 0 0 3 4Zm10 10a3 3 0 1 0-2.82-4H13a3 3 0 0 0 3 4Z"
+                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                  <path d="M8.6 12.6 15.4 9.4M8.6 11.4l6.8 3.2"
+                        fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <div class="share__title">Compartir</div>
+            </div>
+
+            <div class="share-grid">
+              <button id="shareFacebook" class="share-btn" type="button">Facebook</button>
+              <button id="shareWhatsApp" class="share-btn" type="button">WhatsApp</button>
+              <button id="shareInstagram" class="share-btn" type="button">Instagram</button>
+              <button id="shareTwitter" class="share-btn" type="button">Twitter</button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <div class="bottom-actions" aria-label="Acciones">
+        <button id="retakeBtn" class="primary" type="button">
+          <span class="btn-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 7 10.2 5.5h3.6L15 7h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+          </span>
+          Tomar Otra Foto
+        </button>
+
+        <button id="downloadBtn" class="secondary" type="button">
+          <span class="btn-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3v10m0 0 4-4m-4 4-4-4"
+                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 17v3h16v-3"
+                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          Descargar
+        </button>
+      </div>
+
+    </section>
+  </main>
+  <script src="Usar_camara.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>

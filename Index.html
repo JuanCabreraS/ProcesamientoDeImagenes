@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>FIFA.R.</title>
+
+  <link rel="stylesheet" href="PantallaQR.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-qr">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla Escáner QR">
+
+      <div class="panel">
+        <header class="panel__top">
+          <div class="panel__brand">
+            <img class="brand-logo" src="Logo FIFA.R..jpeg" alt="Logo FIFA.R.">
+          </div>
+
+          <div class="topbar__center">
+          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+          </div>
+
+          <div class="panel__sub">Mundial FIFA 2026</div>
+        </header>
+        <div class="panel__inner">
+          <div class="panel__bar" aria-label="Título sección">
+            <span class="bar__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M9 7 10.2 5.5h3.6L15 7h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2Z"
+                      fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+                      fill="none" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </span>
+            <span>Escáner QR</span>
+          </div>
+
+          <div class="scan-box" role="region" aria-label="Área de escaneo">
+            <div class="scan-frame">
+              <video id="qrVideo" class="scan-video" autoplay playsinline muted></video>
+
+              <div class="scan-ball" aria-hidden="true">⚽</div>
+              <div class="scan-pill">Escanea el QR</div>
+
+              <div id="qrStatus" class="scan-status" aria-live="polite"></div>
+              <canvas id="qrCanvas" class="qr-canvas" aria-hidden="true"></canvas>
+            </div>
+          </div>
+
+          <ul class="tips" aria-label="Consejos">
+            <li><span class="tip-ic" aria-hidden="true">📱</span> Centra el código en el marco</li>
+            <li><span class="tip-ic" aria-hidden="true">💡</span> Buena iluminación requerida</li>
+          </ul>
+
+          <button id="scanBtn" class="action-btn" type="button">
+            <span class="bolt" aria-hidden="true">⚡</span> Escanear Código
+          </button>
+          <button id="switchQrCamBtn" class="switchcam-inline" type="button">Cambiar cámara</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+  <script src="Usar_camara.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>
