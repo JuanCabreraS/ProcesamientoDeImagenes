@@ -1,35 +1,52 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
 const MODEL_URL = "./Futbolista.glb";
 
 const canvas = document.getElementById("arCanvas");
 const card = canvas?.closest(".player-card");
 
-function makeDebug(cardEl) {
-  const el = document.createElement("div");
-  el.style.position = "absolute";
-  el.style.left = "8px";
-  el.style.top = "8px";
-  el.style.zIndex = "999";
-  el.style.padding = "6px 8px";
-  el.style.borderRadius = "10px";
-  el.style.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  el.style.fontWeight = "800";
-  el.style.color = "#fff";
-  el.style.background = "rgba(0,0,0,.45)";
-  el.style.backdropFilter = "blur(6px)";
-  el.textContent = "AR: iniciando…";
-  cardEl.appendChild(el);
-  return (msg) => (el.textContent = msg);
+function makeDebug(cardElement) {
+  const badge = document.createElement("div");
+  badge.style.position = "absolute";
+  badge.style.left = "12px";
+  badge.style.top = "60px";
+  badge.style.zIndex = "4";
+  badge.style.padding = "6px 8px";
+  badge.style.borderRadius = "10px";
+  badge.style.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  badge.style.fontWeight = "800";
+  badge.style.color = "#fff";
+  badge.style.background = "rgba(0,0,0,.45)";
+  badge.style.backdropFilter = "blur(6px)";
+  badge.textContent = "Jugador AR: cargando…";
+  cardElement.appendChild(badge);
+
+  return (message, hide = false) => {
+    badge.textContent = message;
+    badge.style.display = hide ? "none" : "block";
+  };
+}
+
+function createShadow() {
+  const geometry = new THREE.CircleGeometry(0.65, 32);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    opacity: 0.14,
+    transparent: true,
+    depthWrite: false
+  });
+
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(0.5, 0.01, 0.1);
+  return mesh;
 }
 
 if (!canvas || !card) {
   console.warn("AR.js: No encontré #arCanvas o .player-card");
 } else {
   const debug = makeDebug(card);
-
-  canvas.style.outline = "2px solid rgba(0,255,255,0.6)";
 
   let renderer;
   try {
@@ -39,10 +56,10 @@ if (!canvas || !card) {
       antialias: true,
       preserveDrawingBuffer: true
     });
-  } catch (e) {
+  } catch (error) {
     debug("AR: WebGL no disponible");
-    console.error(e);
-    throw e;
+    console.error(error);
+    throw error;
   }
 
   renderer.setClearColor(0x000000, 0);
@@ -50,20 +67,36 @@ if (!canvas || !card) {
 
   const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  camera.position.set(0, 0, 3);
-  camera.lookAt(0, 0, 0);
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 1.15, 4.25);
+  scene.add(camera);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-  const key = new THREE.DirectionalLight(0xffffff, 1.0);
-  key.position.set(2, 3, 2);
-  scene.add(key);
+  const ambient = new THREE.AmbientLight(0xffffff, 1.1);
+  scene.add(ambient);
 
-  const testCube = new THREE.Mesh(
-    new THREE.BoxGeometry(0.8, 0.8, 0.8),
-    new THREE.MeshBasicMaterial({ color: 0xff0000 })
-  );
-  scene.add(testCube);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x94a3b8, 1.1);
+  hemi.position.set(0, 2, 0);
+  scene.add(hemi);
+
+  const keyLight = new THREE.DirectionalLight(0xffffff, 1.45);
+  keyLight.position.set(2.4, 4.8, 3.2);
+  scene.add(keyLight);
+
+  const fillLight = new THREE.DirectionalLight(0xffffff, 0.65);
+  fillLight.position.set(-2, 2.2, 2);
+  scene.add(fillLight);
+
+  scene.add(createShadow());
+
+  const loader = new GLTFLoader();
+  const clock = new THREE.Clock();
+
+  let model = null;
+  let mixer = null;
+  let activeAction = null;
+  let defaultAction = null;
+  let clips = [];
+  const lookTarget = new THREE.Vector3(0.5, 1.0, 0);
 
   function resizeToCard() {
     const rect = card.getBoundingClientRect();
@@ -75,110 +108,126 @@ if (!canvas || !card) {
 
     camera.aspect = rect.width / rect.height;
     camera.updateProjectionMatrix();
-
     return true;
+  }
+
+  function fitModel(modelRoot) {
+    const box = new THREE.Box3().setFromObject(modelRoot);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    modelRoot.position.sub(center);
+    modelRoot.position.y -= box.min.y;
+    modelRoot.position.x += 0.55;
+
+    const groundedBox = new THREE.Box3().setFromObject(modelRoot);
+    const groundedSize = groundedBox.getSize(new THREE.Vector3());
+
+    const targetHeight = 2.25;
+    const targetWidth = 1.35;
+    const heightScale = targetHeight / Math.max(groundedSize.y, 0.01);
+    const widthScale = targetWidth / Math.max(groundedSize.x, 0.01);
+    const scale = Math.min(heightScale, widthScale);
+
+    modelRoot.scale.setScalar(scale);
+  }
+
+  function playClipByIndex(index, { loopOnce = false } = {}) {
+    if (!mixer || !clips[index]) return false;
+
+    const nextAction = mixer.clipAction(clips[index]);
+    nextAction.reset();
+    nextAction.enabled = true;
+    nextAction.fadeIn(0.2);
+
+    if (loopOnce) {
+      nextAction.setLoop(THREE.LoopOnce, 1);
+      nextAction.clampWhenFinished = true;
+    } else {
+      nextAction.setLoop(THREE.LoopRepeat, Infinity);
+      nextAction.clampWhenFinished = false;
+    }
+
+    if (activeAction && activeAction !== nextAction) {
+      activeAction.fadeOut(0.2);
+    }
+
+    nextAction.play();
+    activeAction = nextAction;
+    return true;
+  }
+
+  function chooseClipIndexByLabel(label) {
+    if (!clips.length) return -1;
+
+    const normalized = String(label || "").toLowerCase();
+
+    const matchers = [
+      { keys: ["celebr", "trophy", "victory", "goal", "win"], index: /celebr|trophy|victory|goal|win/i },
+      { keys: ["sonrisa", "smile", "happy"], index: /smile|happy|idle|pose/i },
+      { keys: ["energ", "power", "run", "jump"], index: /power|run|jump|dash/i },
+      { keys: ["coraz", "heart", "love"], index: /heart|love|pose/i }
+    ];
+
+    for (const matcher of matchers) {
+      if (matcher.keys.some((key) => normalized.includes(key))) {
+        const foundIndex = clips.findIndex((clip) => matcher.index.test(clip.name));
+        if (foundIndex >= 0) return foundIndex;
+      }
+    }
+
+    return clips.length > 1 ? 1 % clips.length : 0;
+  }
+
+  function resetEmote() {
+    if (defaultAction) {
+      playClipByIndex(0);
+      return true;
+    }
+    return false;
   }
 
   if ("ResizeObserver" in window) {
     new ResizeObserver(() => resizeToCard()).observe(card);
   } else {
-    setInterval(() => resizeToCard(), 300);
+    window.addEventListener("resize", resizeToCard);
   }
 
-  let tries = 0;
-  const ensureSize = () => {
-    tries++;
-    const ok = resizeToCard();
-    if (!ok && tries < 30) requestAnimationFrame(ensureSize);
-  };
-  ensureSize();
+  resizeToCard();
 
-  const loader = new GLTFLoader();
-  let model = null;
-  let mixer = null;
-
-  debug("AR: cargando GLB…");
+  debug("AR: cargando Futbolista.glb…");
 
   loader.load(
     MODEL_URL,
     (gltf) => {
-      debug("AR: GLB cargado");
-
-      // 1) agregar modelo
       model = gltf.scene;
       scene.add(model);
 
-      // 2) centrar el modelo en (0,0,0)
-      {
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
-      }
+      fitModel(model);
 
-      // 3) escala (ajusta targetHeight para más grande/chico)
-      const targetHeight = 1.8; // <-- cambia: 2.2 más grande, 1.2 más chico
-      {
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const scale = targetHeight / (size.y || 1);
-        model.scale.setScalar(scale);
-      }
-
-      // 4) RE-centrar después de escalar (clave para que quede centrado)
-      {
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
-      }
-
-      // 5) encuadrar cámara para que el modelo quede centrado y visible
-      {
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-
-        const fov = THREE.MathUtils.degToRad(camera.fov);
-        let distance = (maxDim / 2) / Math.tan(fov / 2);
-
-        distance *= 1.15; // margen (sube a 1.3 si lo recorta, baja a 1.0 si lo quieres más grande)
-
-        camera.position.set(0, 0, distance);
-        camera.near = Math.max(0.01, distance / 100);
-        camera.far  = distance * 100;
-        camera.updateProjectionMatrix();
-        camera.lookAt(0, 0, 0);
-      }
-
-      /* Si aún lo ves un poco arriba/abajo, ajusta con un “nudge”:
-      model.position.y += 0.10; // sube
-      model.position.y -= 0.10; // baja
-*/
-
-      scene.remove(testCube);
-
-      if (gltf.animations?.length) {
+      clips = Array.isArray(gltf.animations) ? gltf.animations : [];
+      if (clips.length) {
         mixer = new THREE.AnimationMixer(model);
-        mixer.clipAction(gltf.animations[0]).play();
-        debug("AR: animación ON 🎬");
+        defaultAction = mixer.clipAction(clips[0]);
+        playClipByIndex(0);
       }
+
+      debug("Jugador AR listo", true);
     },
     undefined,
-    (err) => {
-      debug("AR: error cargando GLB");
-      console.error("Error cargando GLB:", MODEL_URL, err);
+    (error) => {
+      debug("No encontré Futbolista.glb");
+      console.error("Error cargando GLB:", MODEL_URL, error);
     }
   );
 
-  const clock = new THREE.Clock();
-
   function tick() {
-    const dt = clock.getDelta();
+    const delta = clock.getDelta();
 
-    if (!model) testCube.rotation.y += dt * 1.2;
-
-    if (mixer) mixer.update(dt);
-
+    if (mixer) mixer.update(delta);
+    camera.lookAt(lookTarget);
     renderer.render(scene, camera);
+
     requestAnimationFrame(tick);
   }
 
@@ -187,6 +236,15 @@ if (!canvas || !card) {
   window.ARPhoto = {
     canvas: renderer.domElement,
     resizeTo: resizeToCard,
-    renderOnce: () => renderer.render(scene, camera)
+    renderOnce: () => renderer.render(scene, camera),
+    playEmote(label) {
+      if (!clips.length) return false;
+      const index = chooseClipIndexByLabel(label);
+      return playClipByIndex(index >= 0 ? index : 0, { loopOnce: clips.length > 1 });
+    },
+    resetEmote,
+    get isReady() {
+      return Boolean(model);
+    }
   };
 }

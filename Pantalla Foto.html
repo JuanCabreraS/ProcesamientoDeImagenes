@@ -8,22 +8,14 @@
   <link rel="stylesheet" href="PantallaFoto.css" />
   <link rel="stylesheet" href="Fondo.css" />
   <link rel="stylesheet" href="Formato.css" />
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
 </head>
 
-<body class="theme-monterrey page-foto">
+<body class="theme-monterrey page-foto" data-filter-index="0">
   <main class="screen">
-    <section class="content" aria-label="Pantalla para tomar foto">
+    <section class="content" aria-label="Pantalla para tomar foto con jugador">
 
       <header class="topbar">
-        <button class="nav-btn" type="button" aria-label="Regresar">
+        <button id="backBtn" class="nav-btn" type="button" aria-label="Regresar">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M15 6 9 12l6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -41,24 +33,31 @@
         </button>
       </header>
 
-      <div class="preview-area" aria-label="Vista previa">
-
+      <div class="preview-area" aria-label="Vista previa de foto">
         <div class="preview-wrap">
-          <div class="player-card" aria-label="Tarjeta del jugador">
+          <div class="player-card" aria-label="Foto AR con el jugador">
             <video id="photoVideo" class="camera-video" autoplay playsinline muted></video>
-            <canvas id="arCanvas" class="ar-canvas"></canvas>
+            <canvas id="arCanvas" class="ar-canvas" aria-hidden="true"></canvas>
+            <canvas id="photoCanvas" class="hidden-canvas" aria-hidden="true"></canvas>
+
+            <div id="photoStatus" class="photo-status" aria-live="polite">Activando cámara…</div>
+
             <div id="emotePill" class="emote-pill" aria-hidden="true">
               <span class="emote-pill__icon" aria-hidden="true"></span>
               <span class="emote-pill__text">Emote</span>
             </div>
 
-            <div class="player-number">10</div>
-            <div class="player-pill">Neymar JR</div>
+            <div id="emoteSticker" class="emote-sticker" aria-hidden="true">
+              <span class="emote-sticker__emoji" aria-hidden="true">⚽</span>
+              <span class="emote-sticker__label">Celebración</span>
+            </div>
 
+            <div class="player-number">10</div>
+            <div class="player-pill">Jugador AR</div>
           </div>
 
           <div class="emote-stack" aria-label="Emotes">
-            <button class="emote-btn" type="button" data-label="Celebración" aria-pressed="false">
+            <button class="emote-btn" type="button" data-label="Celebración" data-emoji="🏆" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 4h8v2a4 4 0 0 1-8 0V4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
                 <path d="M6 6H4a3 3 0 0 0 3 3M18 6h2a3 3 0 0 1-3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -67,7 +66,7 @@
               </svg>
             </button>
 
-            <button class="emote-btn" type="button" data-label="Sonrisa" aria-pressed="false">
+            <button class="emote-btn" type="button" data-label="Sonrisa" data-emoji="😄" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M7 14c1.2 1.6 3 2.5 5 2.5S15.8 15.6 17 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
                 <path d="M9 10h.01M15 10h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
@@ -75,13 +74,13 @@
               </svg>
             </button>
 
-            <button class="emote-btn" type="button" data-label="Energía" aria-pressed="false">
+            <button class="emote-btn" type="button" data-label="Energía" data-emoji="⚡" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M13 2 4 14h7l-1 8 10-14h-7l0-6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
               </svg>
             </button>
 
-            <button class="emote-btn" type="button" data-label="Corazón" aria-pressed="false">
+            <button class="emote-btn" type="button" data-label="Corazón" data-emoji="❤️" aria-pressed="false">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z"
                       fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
@@ -89,7 +88,6 @@
             </button>
           </div>
         </div>
-
       </div>
 
       <section class="capture-panel" aria-label="Panel de captura">
@@ -101,7 +99,7 @@
                       fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
               </svg>
             </span>
-            <span id="effectsLabel">Efectos OFF</span>
+            <span id="effectsLabel">Filtro: Normal</span>
           </button>
 
           <button id="switchCamBtn" class="switchcam-btn" type="button">Cambiar cámara</button>
@@ -118,66 +116,14 @@
           </span>
         </button>
 
-        <div class="hint">Toca para capturar foto</div>
+        <div class="hint">Parece tipo Pokémon GO: cámara + jugador 3D + filtro + emote</div>
       </section>
 
     </section>
   </main>
 
-  <script>
-    const effectsBtn = document.getElementById("effectsBtn");
-    const effectsLabel = document.getElementById("effectsLabel");
-
-    effectsBtn?.addEventListener("click", () => {
-      const isOn = document.body.classList.toggle("effects-on");
-      effectsBtn.setAttribute("aria-pressed", String(isOn));
-      effectsLabel.textContent = isOn ? "Efectos ON" : "Efectos OFF";
-    });
-
-    const emoteButtons = Array.from(document.querySelectorAll(".emote-btn"));
-    const emotePill = document.getElementById("emotePill");
-    const emotePillIcon = emotePill?.querySelector(".emote-pill__icon");
-    const emotePillText = emotePill?.querySelector(".emote-pill__text");
-
-    function clearEmotes() {
-      emoteButtons.forEach(b => {
-        b.classList.remove("is-active");
-        b.setAttribute("aria-pressed", "false");
-      });
-      if (emotePill) {
-        emotePill.classList.remove("is-visible");
-        emotePill.setAttribute("aria-hidden", "true");
-      }
-    }
-
-    emoteButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const isActive = btn.classList.contains("is-active");
-
-        if (isActive) {
-          clearEmotes();
-          return;
-        }
-
-        clearEmotes();
-        btn.classList.add("is-active");
-        btn.setAttribute("aria-pressed", "true");
-
-        const label = btn.dataset.label || "Emote";
-        const svg = btn.querySelector("svg");
-
-        if (emotePill && emotePillIcon && emotePillText) {
-          emotePillIcon.innerHTML = svg ? svg.outerHTML : "";
-          emotePillText.textContent = label;
-          emotePill.classList.add("is-visible");
-          emotePill.setAttribute("aria-hidden", "false");
-        }
-      });
-    });
-  </script>
-  <canvas id="photoCanvas" class="hidden-canvas" aria-hidden="true"></canvas>
   <script src="Usar_camara.js" defer></script>
-  <script type="module" src="AR.js"></script>
   <script src="Camaras.js" defer></script>
+  <script type="module" src="AR.js"></script>
 </body>
 </html>
