@@ -1,7 +1,7 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
-const MODEL_URL = new URL("./Futbolista.glb", import.meta.url).href;
+const MODEL_URL = "./Futbolista.glb";
 
 const canvas = document.getElementById("arCanvas");
 const stage = document.querySelector(".ar-stage");
@@ -11,9 +11,35 @@ function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
 
+function makeDebug(host) {
+  const el = document.createElement("div");
+  el.style.position = "absolute";
+  el.style.left = "10px";
+  el.style.top = "72px";
+  el.style.zIndex = "8";
+  el.style.padding = "6px 8px";
+  el.style.borderRadius = "10px";
+  el.style.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  el.style.fontWeight = "800";
+  el.style.color = "#fff";
+  el.style.background = "rgba(0,0,0,.42)";
+  el.style.backdropFilter = "blur(8px)";
+  el.style.pointerEvents = "none";
+  el.textContent = "AR: iniciando…";
+  host.appendChild(el);
+  return (msg) => {
+    el.textContent = msg;
+  };
+}
+
 if (!canvas || !stage) {
-  console.warn("AR.js: no se encontró #arCanvas o .ar-stage");
+  console.warn("AR.js: no encontré #arCanvas o .ar-stage");
 } else {
+  const debug = makeDebug(stage);
+
+  canvas.style.pointerEvents = "none";
+  canvas.style.background = "transparent";
+
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
@@ -24,10 +50,9 @@ if (!canvas || !stage) {
 
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
+
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
   scene.add(camera);
 
@@ -39,10 +64,6 @@ if (!canvas || !stage) {
 
   const key = new THREE.DirectionalLight(0xffffff, 1.45);
   key.position.set(3, 5, 4);
-  key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  key.shadow.camera.near = 0.5;
-  key.shadow.camera.far = 20;
   scene.add(key);
 
   const fill = new THREE.DirectionalLight(0xdce8ff, 0.45);
@@ -70,9 +91,7 @@ if (!canvas || !stage) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
 
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
+    return new THREE.CanvasTexture(c);
   }
 
   const shadowPlane = new THREE.Mesh(
@@ -101,7 +120,7 @@ if (!canvas || !stage) {
   let modelReady = false;
   let isPortrait = true;
 
-  const restPose = new THREE.Vector3(0.35, -0.9, 0);
+  const restPose = new THREE.Vector3(0.35, -0.88, 0);
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -257,6 +276,7 @@ if (!canvas || !stage) {
   }
 
   setStatus("Cargando jugador…");
+  debug("AR: cargando jugador…");
 
   loader.load(
     MODEL_URL,
@@ -281,6 +301,7 @@ if (!canvas || !stage) {
 
       modelReady = true;
       setStatus("Jugador listo");
+      debug(`AR: jugador listo · clips: ${(gltf.animations || []).length}`);
       console.log("GLB cargado", gltf);
       console.log("Animaciones:", (gltf.animations || []).map((a) => a.name));
     },
@@ -288,6 +309,7 @@ if (!canvas || !stage) {
     (error) => {
       console.error("Error cargando Futbolista.glb", error);
       setStatus("No se pudo cargar el jugador");
+      debug("AR: error cargando GLB");
     }
   );
 
@@ -343,6 +365,7 @@ if (!canvas || !stage) {
   animate();
 
   window.ARPhoto = {
+    canvas: renderer.domElement,
     resizeTo,
     renderOnce() {
       resizeTo();
