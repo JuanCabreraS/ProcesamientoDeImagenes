@@ -55,6 +55,13 @@ if (!canvas || !stage) {
   const modelRoot = new THREE.Group();
   world.add(modelRoot);
 
+  const testBox = new THREE.Mesh(
+  new THREE.BoxGeometry(0.6, 0.6, 0.6),
+  new THREE.MeshNormalMaterial()
+  );
+  testBox.position.set(0, 1.0, 0);
+  scene.add(testBox);
+
   function createShadowTexture() {
     const size = 256;
     const c = document.createElement("canvas");
@@ -336,6 +343,9 @@ if (!canvas || !stage) {
         activeEmote = "";
       }
     }
+
+    testBox.rotation.x += 0.01;
+    testBox.rotation.y += 0.02;
 
     renderer.render(scene, camera);
   }
