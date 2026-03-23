@@ -5,6 +5,11 @@ const MODEL_URL = "Futbolista.glb";
 
 const canvas = document.getElementById("arCanvas");
 const card = canvas?.closest(".player-card");
+const statusEl = document.getElementById("photoStatus");
+
+function setStatus(text) {
+  if (statusEl) statusEl.textContent = text;
+}
 
 function makeBadge(host) {
   const el = document.createElement("div");
@@ -28,7 +33,7 @@ function makeBadge(host) {
 }
 
 function createGroundShadow() {
-  const geometry = new THREE.CircleGeometry(0.62, 48);
+  const geometry = new THREE.CircleGeometry(0.78, 48);
   const material = new THREE.MeshBasicMaterial({
     color: 0x000000,
     transparent: true,
@@ -37,17 +42,20 @@ function createGroundShadow() {
   });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = -Math.PI / 2;
-  mesh.position.set(0.4, 0.01, 0.05);
+  mesh.position.set(0, 0.01, 0.05);
   return mesh;
 }
 
 if (!canvas || !card) {
   console.warn("AR.js: no encontré #arCanvas o .player-card");
+  setStatus("No encontré el lienzo AR.");
 } else {
   const debug = makeBadge(card);
 
   canvas.style.pointerEvents = "none";
   canvas.style.background = "transparent";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -61,26 +69,37 @@ if (!canvas || !card) {
 
   const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 100);
-  camera.position.set(0, 1.15, 4.4);
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 100);
+  camera.position.set(0, 1.0, 4.0);
   scene.add(camera);
 
-  const ambient = new THREE.AmbientLight(0xffffff, 1.15);
-  scene.add(ambient);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.25));
 
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x8fa0b9, 1.05);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x8fa0b9, 1.15);
   hemi.position.set(0, 3, 0);
   scene.add(hemi);
 
   const key = new THREE.DirectionalLight(0xffffff, 1.45);
-  key.position.set(2.8, 4.6, 3.5);
+  key.position.set(2.4, 4.6, 3.5);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xffffff, 0.7);
-  fill.position.set(-2.3, 2.1, 2.2);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.75);
+  fill.position.set(-2.2, 2.0, 2.4);
   scene.add(fill);
 
-  scene.add(createGroundShadow());
+  const rim = new THREE.DirectionalLight(0xffffff, 0.45);
+  rim.position.set(0.8, 2.8, -2.2);
+  scene.add(rim);
+
+  const shadow = createGroundShadow();
+  scene.add(shadow);
+
+  const helperBox = new THREE.Mesh(
+    new THREE.BoxGeometry(0.55, 1.1, 0.3),
+    new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.35 })
+  );
+  helperBox.position.set(0, 0.55, 0);
+  scene.add(helperBox);
 
   const clock = new THREE.Clock();
   const loader = new GLTFLoader();
@@ -90,7 +109,7 @@ if (!canvas || !card) {
   let clips = [];
   let activeAction = null;
   let defaultAction = null;
-  const lookTarget = new THREE.Vector3(0.4, 1.05, 0);
+  const lookTarget = new THREE.Vector3(0, 0.95, 0);
 
   function resizeToCard() {
     const rect = card.getBoundingClientRect();
@@ -106,26 +125,44 @@ if (!canvas || !card) {
     return true;
   }
 
-  function fitModel(modelRoot) {
-    const box1 = new THREE.Box3().setFromObject(modelRoot);
-    const center1 = box1.getCenter(new THREE.Vector3());
-    modelRoot.position.sub(center1);
+  function frameModel(modelRoot) {
+    const initialBox = new THREE.Box3().setFromObject(modelRoot);
+    const initialCenter = initialBox.getCenter(new THREE.Vector3());
+    modelRoot.position.sub(initialCenter);
 
-    const box2 = new THREE.Box3().setFromObject(modelRoot);
-    const size2 = box2.getSize(new THREE.Vector3());
+    const size = initialBox.getSize(new THREE.Vector3());
+    const baseScale = 0.9;
+    const targetHeight = 2.0;
+    const scaleFromHeight = targetHeight / Math.max(size.y, 0.001);
 
-    const targetHeight = 2.18;
-    const targetWidth = 1.28;
+    modelRoot.scale.setScalar(scaleFromHeight * baseScale);
 
-    const scaleByHeight = targetHeight / Math.max(size2.y, 0.001);
-    const scaleByWidth = targetWidth / Math.max(size2.x, 0.001);
-    const scale = Math.min(scaleByHeight, scaleByWidth);
+    const box = new THREE.Box3().setFromObject(modelRoot);
+    modelRoot.position.y -= box.min.y;
+    modelRoot.position.x = 0;
+    modelRoot.position.z = 0;
+    modelRoot.rotation.y = -0.12;
 
-    modelRoot.scale.setScalar(scale);
+    shadow.position.x = 0;
+    shadow.position.z = 0.03;
 
-    const box3 = new THREE.Box3().setFromObject(modelRoot);
-    modelRoot.position.y -= box3.min.y;
-    modelRoot.position.x += 0.48;
+    const framedBox = new THREE.Box3().setFromObject(modelRoot);
+    const framedSize = framedBox.getSize(new THREE.Vector3());
+    const framedCenter = framedBox.getCenter(new THREE.Vector3());
+
+    const vFov = THREE.MathUtils.degToRad(camera.fov);
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+
+    const distV = (framedSize.y * 0.55) / Math.tan(vFov / 2);
+    const distH = (framedSize.x * 0.60) / Math.tan(hFov / 2);
+    const distance = Math.max(distV, distH) * 1.1;
+
+    camera.position.set(0, Math.max(0.95, framedCenter.y * 0.95), distance);
+    camera.near = Math.max(0.05, distance / 100);
+    camera.far = distance * 20;
+    camera.updateProjectionMatrix();
+
+    lookTarget.set(0, Math.max(0.9, framedCenter.y * 0.95), 0);
   }
 
   function playClip(index, { loopOnce = false } = {}) {
@@ -195,6 +232,7 @@ if (!canvas || !card) {
   ensureSize();
 
   debug("Jugador AR: cargando modelo…");
+  setStatus("Cámara lista. Cargando jugador AR…");
 
   loader.load(
     MODEL_URL,
@@ -202,7 +240,7 @@ if (!canvas || !card) {
       model = gltf.scene;
       scene.add(model);
 
-      fitModel(model);
+      frameModel(model);
 
       model.traverse((node) => {
         if (node.isMesh) {
@@ -222,13 +260,18 @@ if (!canvas || !card) {
         playClip(0);
       }
 
+      card.classList.add("is-live");
+      scene.remove(helperBox);
+
       resizeToCard();
       renderer.render(scene, camera);
       debug("Jugador AR: listo", true);
+      setStatus("Jugador AR listo");
     },
     undefined,
     (error) => {
       debug("No se pudo cargar Futbolista.glb");
+      setStatus("No se pudo cargar el jugador AR.");
       console.error("Error cargando GLB:", MODEL_URL, error);
     }
   );

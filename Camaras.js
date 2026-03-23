@@ -92,8 +92,11 @@ function setupMarkerLandingPage(markerScene) {
   const statusEl = document.getElementById("qrStatus");
   const frame = document.getElementById("markerFrame");
   const target = document.getElementById("markerTarget");
+  const bgVideo = document.getElementById("markerBgVideo");
 
   let unlocked = false;
+  let attachTimer = null;
+  let bgAttached = false;
 
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
@@ -110,6 +113,49 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("Jugador detectado. Ya puedes continuar a la trivia.");
   };
 
+  function tryAttachMindARVideo() {
+    if (!bgVideo || bgAttached) return false;
+
+    const arSystem = markerScene.systems && markerScene.systems["mindar-image-system"];
+    const internalVideo =
+      arSystem?.video ||
+      markerScene.querySelector("video");
+
+    const stream = internalVideo?.srcObject;
+    if (!stream) return false;
+
+    bgVideo.srcObject = stream;
+    bgVideo.muted = true;
+    bgVideo.playsInline = true;
+    bgVideo
+      .play()
+      .then(() => {
+        bgAttached = true;
+        frame?.classList.add("is-live");
+      })
+      .catch(() => {
+        bgAttached = true;
+        frame?.classList.add("is-live");
+      });
+
+    return true;
+  }
+
+  function startAttachLoop() {
+    if (attachTimer) return;
+
+    let tries = 0;
+    attachTimer = window.setInterval(() => {
+      tries += 1;
+      const ok = tryAttachMindARVideo();
+
+      if (ok || tries > 80) {
+        window.clearInterval(attachTimer);
+        attachTimer = null;
+      }
+    }, 250);
+  }
+
   switchBtn?.setAttribute("disabled", "disabled");
 
   if (sessionStorage.getItem("markerUnlocked") === "1") {
@@ -120,9 +166,20 @@ function setupMarkerLandingPage(markerScene) {
 
   markerScene.addEventListener("arReady", () => {
     frame?.classList.add("is-live");
+    startAttachLoop();
+    tryAttachMindARVideo();
+
     if (!unlocked) {
       setStatus("AR listo. Apunta al marcadorweb para desbloquear al jugador.");
     }
+  });
+
+  markerScene.addEventListener("loaded", () => {
+    startAttachLoop();
+  });
+
+  markerScene.addEventListener("renderstart", () => {
+    startAttachLoop();
   });
 
   markerScene.addEventListener("arError", () => {
@@ -131,6 +188,7 @@ function setupMarkerLandingPage(markerScene) {
 
   target?.addEventListener("targetFound", () => {
     unlockTrivia();
+    tryAttachMindARVideo();
   });
 
   target?.addEventListener("targetLost", () => {
@@ -445,7 +503,7 @@ function setupPhotoPage() {
       currentFacing = video.dataset.facing || facingMode;
       syncFacingUI();
       card.classList.add("is-live");
-      setStatus("Cámara lista");
+      setStatus("Cámara lista. Cargando jugador AR…");
     } catch (error) {
       console.error(error);
       setStatus("No se pudo abrir la cámara (permiso/HTTPS).");
