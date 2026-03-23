@@ -92,11 +92,8 @@ function setupMarkerLandingPage(markerScene) {
   const statusEl = document.getElementById("qrStatus");
   const frame = document.getElementById("markerFrame");
   const target = document.getElementById("markerTarget");
-  const bgVideo = document.getElementById("markerBgVideo");
 
   let unlocked = false;
-  let previewBound = false;
-  let previewRetryTimer = null;
 
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
@@ -113,71 +110,6 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("Jugador detectado. Ya puedes continuar a la trivia.");
   };
 
-  const prepareSceneVisuals = () => {
-    markerScene.style.background = "transparent";
-
-    const canvas = markerScene.canvas;
-    if (canvas) {
-      canvas.style.position = "absolute";
-      canvas.style.inset = "0";
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      canvas.style.background = "transparent";
-      canvas.style.pointerEvents = "none";
-    }
-
-    const renderer = markerScene.renderer;
-    if (renderer) {
-      renderer.setClearColor(0x000000, 0);
-      if (typeof renderer.setClearAlpha === "function") {
-        renderer.setClearAlpha(0);
-      }
-    }
-  };
-
-  const attachMindARPreview = () => {
-    if (previewBound || !bgVideo) return previewBound;
-
-    const arSystem = markerScene.systems && markerScene.systems["mindar-image-system"];
-    const srcVideo = arSystem && arSystem.video;
-
-    if (!srcVideo) return false;
-
-    const syncStream = () => {
-      const stream = srcVideo.srcObject;
-      if (!stream) return false;
-
-      if (bgVideo.srcObject !== stream) {
-        bgVideo.srcObject = stream;
-      }
-
-      bgVideo.muted = true;
-      bgVideo.setAttribute("playsinline", "");
-      bgVideo.play().catch(() => {});
-      frame?.classList.add("is-live");
-      previewBound = true;
-      return true;
-    };
-
-    if (syncStream()) return true;
-
-    srcVideo.addEventListener("loadedmetadata", syncStream, { once: true });
-    srcVideo.addEventListener("canplay", syncStream, { once: true });
-
-    return false;
-  };
-
-  const schedulePreviewAttach = (attempt = 0) => {
-    if (attachMindARPreview()) return;
-    if (attempt > 30) return;
-
-    clearTimeout(previewRetryTimer);
-    previewRetryTimer = setTimeout(() => {
-      prepareSceneVisuals();
-      schedulePreviewAttach(attempt + 1);
-    }, 180);
-  };
-
   switchBtn?.setAttribute("disabled", "disabled");
 
   if (sessionStorage.getItem("markerUnlocked") === "1") {
@@ -186,16 +118,7 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("Inicializando cámara AR…");
   }
 
-  markerScene.addEventListener("loaded", prepareSceneVisuals);
-  markerScene.addEventListener("renderstart", () => {
-    prepareSceneVisuals();
-    schedulePreviewAttach();
-  });
-
   markerScene.addEventListener("arReady", () => {
-    prepareSceneVisuals();
-    schedulePreviewAttach();
-
     frame?.classList.add("is-live");
     if (!unlocked) {
       setStatus("AR listo. Apunta al marcadorweb para desbloquear al jugador.");
@@ -207,7 +130,6 @@ function setupMarkerLandingPage(markerScene) {
   });
 
   target?.addEventListener("targetFound", () => {
-    schedulePreviewAttach();
     unlockTrivia();
   });
 
