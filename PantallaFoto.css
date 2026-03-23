@@ -1,7 +1,5 @@
 :root{
   --text: #0f172a;
-  --line: rgba(255,255,255,0.18);
-  --soft: rgba(255,255,255,0.82);
 }
 
 *{ box-sizing: border-box; }
@@ -61,6 +59,8 @@ body.page-foto{
   background: transparent;
 }
 
+/* ------------------ top bar ------------------ */
+
 .topbar{
   height: 52px;
   display: grid;
@@ -79,6 +79,7 @@ body.page-foto{
   background: rgba(0,0,0,0.28);
   border: 1px solid rgba(255,255,255,0.14);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .nav-btn{
@@ -109,6 +110,8 @@ body.page-foto{
   display: block;
 }
 
+/* ------------------ floating labels ------------------ */
+
 .photo-status{
   position: absolute;
   top: calc(72px + env(safe-area-inset-top));
@@ -122,7 +125,9 @@ body.page-foto{
   font-size: 12px;
   font-weight: 800;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .emote-pill{
@@ -142,6 +147,7 @@ body.page-foto{
   color: #0f172a;
   box-shadow: 0 10px 22px rgba(0,0,0,0.08);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .emote-pill.is-visible{
@@ -160,6 +166,8 @@ body.page-foto{
   height: 18px;
   color: #0f172a;
 }
+
+/* ------------------ emotes ------------------ */
 
 .emote-stack{
   position: absolute;
@@ -184,6 +192,7 @@ body.page-foto{
   color: #fff;
   box-shadow: 0 10px 20px rgba(0,0,0,0.10);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .emote-btn svg{
@@ -194,11 +203,7 @@ body.page-foto{
 .emote-btn.is-active{
   border: 0;
   color: #fff;
-  background: linear-gradient(90deg,
-    #19e6d1,
-    #4b32d1,
-    #d81b2c
-  );
+  background: linear-gradient(90deg, #19e6d1, #4b32d1, #d81b2c);
   box-shadow: 0 14px 26px rgba(0,0,0,0.18);
 }
 
@@ -223,6 +228,8 @@ body.page-foto{
   display: inline-flex;
 }
 
+/* ------------------ capture controls ------------------ */
+
 .capture-panel{
   position: absolute;
   left: 0;
@@ -231,7 +238,7 @@ body.page-foto{
   padding: 0 14px;
   display: grid;
   justify-items: center;
-  gap: 12px;
+  gap: 14px;
   z-index: 6;
   background: transparent;
   border: 0;
@@ -242,9 +249,8 @@ body.page-foto{
 .capture-row{
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  gap: 14px;
   pointer-events: none;
 }
 
@@ -257,31 +263,24 @@ body.page-foto{
   border: 0;
 }
 
-.glass-btn{
+.switchcam-btn{
   height: 42px;
   padding: 0 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(0,0,0,0.30);
   color: #fff;
   font-weight: 900;
   font-size: 13px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
   cursor: pointer;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 10px 22px rgba(0,0,0,0.16);
 }
 
-.hint{
-  display: none !important;
-}
-
 .shutter{
-  width: 74px;
-  height: 74px;
+  width: 76px;
+  height: 76px;
   border-radius: 999px;
   border: 0;
   cursor: pointer;
@@ -292,11 +291,18 @@ body.page-foto{
   color: #fff;
 }
 
+.shutter-ic{
+  display: inline-grid;
+  place-items: center;
+}
+
 .shutter-ic svg{
   width: 30px;
   height: 30px;
   color: #fff;
 }
+
+/* ------------------ hidden canvas ------------------ */
 
 .hidden-canvas{
   position: fixed;
@@ -304,6 +310,12 @@ body.page-foto{
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+#effectsBtn,
+.effects-btn,
+.hint{
+  display: none !important;
 }
 
 @supports (height: 100svh){

@@ -519,6 +519,7 @@ function setupPhotoPage() {
       });
 
       currentFacing = video.dataset.facing || facingMode;
+      window.ARPhoto?.setFacingMode?.(currentFacing);
       setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
@@ -540,6 +541,7 @@ function setupPhotoPage() {
       setStatus("Cambiando cámara...");
       await window.CameraUtils.switchCamera(video);
       currentFacing = video.dataset.facing || (currentFacing === "user" ? "environment" : "user");
+      window.ARPhoto?.setFacingMode?.(currentFacing);
       setStatus("Cámara cambiada");
     } catch (error) {
       console.error(error);

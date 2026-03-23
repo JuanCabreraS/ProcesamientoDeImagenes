@@ -1,8 +1,6 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
-console.log("AR.js correcto cargado");
-
 const MODEL_URL = new URL("./Futbolista.glb", import.meta.url).href;
 
 const canvas = document.getElementById("arCanvas");
@@ -32,7 +30,6 @@ if (!canvas || !stage) {
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
   scene.add(camera);
 
-  // Luces
   scene.add(new THREE.AmbientLight(0xffffff, 1.25));
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
@@ -53,15 +50,6 @@ if (!canvas || !stage) {
   const modelRoot = new THREE.Group();
   world.add(modelRoot);
 
-  // Cubo debug: si esto se ve, Three sí está renderizando
-  const testBox = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55, 0.55, 0.55),
-    new THREE.MeshNormalMaterial()
-  );
-  testBox.position.set(-1.15, 1.1, 0);
-  scene.add(testBox);
-
-  // Sombra falsa
   function createShadowTexture() {
     const size = 256;
     const c = document.createElement("canvas");
@@ -89,7 +77,6 @@ if (!canvas || !stage) {
       opacity: 0.95
     })
   );
-
   shadowPlane.rotation.x = -Math.PI / 2;
   shadowPlane.position.set(0, 0.01, 0);
   world.add(shadowPlane);
@@ -103,13 +90,77 @@ if (!canvas || !stage) {
   let activeEmote = "";
   let emoteEndAt = 0;
   let modelReady = false;
+
   let isPortrait = true;
+  let currentFacing = "user";
 
   let finalWidth = 1.0;
   let finalHeight = 1.8;
   let finalDepth = 0.6;
+  let baseShadowX = 1.2;
+  let baseShadowY = 1.0;
 
-  const restPose = new THREE.Vector3(0.38, -0.88, 0);
+  const restPose = new THREE.Vector3(0, 0, 0);
+
+  function getViewConfig() {
+  // frontal = selfie: más grande y a un lado
+  if (currentFacing === "user") {
+    return {
+      x: isPortrait ? 0.88 : 1.02,
+      y: isPortrait ? -1.02 : -0.88,
+      scale: isPortrait ? 1.28 : 1.16,
+      distanceFactor: isPortrait ? 1.22 : 1.30,
+      distanceOffset: isPortrait ? 0.18 : 0.30,
+      lookOffsetX: isPortrait ? -0.10 : -0.08
+    };
+  }
+
+  // trasera = normal: centrado y más al fondo
+  return {
+    x: 0,
+    y: isPortrait ? -0.66 : -0.60,
+    scale: isPortrait ? 0.86 : 0.80,
+    distanceFactor: isPortrait ? 2.00 : 2.15,
+    distanceOffset: isPortrait ? 1.20 : 1.35,
+    lookOffsetX: 0
+  };
+}
+
+  function updateViewPose() {
+  const cfg = getViewConfig();
+
+  restPose.set(cfg.x, cfg.y, 0);
+  world.position.copy(restPose);
+
+  const scaledW = finalWidth * cfg.scale;
+  const scaledH = finalHeight * cfg.scale;
+  const scaledD = finalDepth * cfg.scale;
+  const maxDim = Math.max(scaledW, scaledH, scaledD);
+
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  const dist = ((maxDim / 2) / Math.tan(fov / 2)) * cfg.distanceFactor;
+
+  camera.position.set(
+    cfg.x,
+    scaledH * (currentFacing === "user" ? 0.62 : 0.55),
+    dist + cfg.distanceOffset
+  );
+
+  camera.lookAt(
+    cfg.x + cfg.lookOffsetX,
+    scaledH * (currentFacing === "user" ? 0.50 : 0.46),
+    0
+  );
+
+  camera.updateProjectionMatrix();
+
+  shadowPlane.position.x = cfg.x;
+  shadowPlane.scale.set(
+    baseShadowX * cfg.scale,
+    baseShadowY * cfg.scale,
+    1
+  );
+}
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -122,18 +173,7 @@ if (!canvas || !stage) {
     camera.aspect = rect.width / rect.height;
     isPortrait = rect.height >= rect.width;
 
-    // Jugador ligeramente a la derecha, tipo selfie
-    restPose.set(isPortrait ? 0.38 : 0.70, isPortrait ? -0.88 : -0.74, 0);
-    world.position.copy(restPose);
-
-    const maxDim = Math.max(finalWidth, finalHeight, finalDepth);
-    const fov = THREE.MathUtils.degToRad(camera.fov);
-    const dist = ((maxDim / 2) / Math.tan(fov / 2)) * 1.7;
-
-    camera.position.set(restPose.x, finalHeight * 0.58, dist + 0.85);
-    camera.lookAt(restPose.x, finalHeight * 0.48, 0);
-    camera.updateProjectionMatrix();
-
+    updateViewPose();
     return true;
   }
 
@@ -145,7 +185,6 @@ if (!canvas || !stage) {
     let box = new THREE.Box3().setFromObject(object3D);
     const center = box.getCenter(new THREE.Vector3());
 
-    // Centrar en X/Z y apoyar pies en el suelo
     object3D.position.x -= center.x;
     object3D.position.z -= center.z;
     object3D.position.y -= box.min.y;
@@ -153,7 +192,6 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    // Escala más controlada
     const targetHeight = 1.85;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
@@ -172,13 +210,10 @@ if (!canvas || !stage) {
     finalHeight = finalSize.y;
     finalDepth = finalSize.z;
 
-    shadowPlane.scale.set(
-      Math.max(1.1, finalWidth * 1.08),
-      Math.max(1.0, finalDepth * 3.0),
-      1
-    );
+    baseShadowX = Math.max(1.1, finalWidth * 1.08);
+    baseShadowY = Math.max(1.0, finalDepth * 3.0);
 
-    resizeTo();
+    updateViewPose();
   }
 
   function buildActions(clips, root) {
@@ -321,40 +356,34 @@ if (!canvas || !stage) {
 
     if (mixer) mixer.update(dt);
 
-    const baseX = isPortrait ? 0.38 : 0.70;
-    const baseY = isPortrait ? -0.88 : -0.74;
-    const bob = Math.sin(t * 1.65) * 0.025;
+    const cfg = getViewConfig();
+    const bob = Math.sin(t * 1.65) * (currentFacing === "user" ? 0.028 : 0.018);
 
-    world.position.set(baseX, baseY + bob, 0);
+    world.position.set(restPose.x, restPose.y + bob, 0);
 
     if (modelReady) {
       modelRoot.rotation.set(0, Math.sin(t * 0.65) * 0.05, 0);
 
+      const baseScale = cfg.scale;
+      modelRoot.scale.set(baseScale, baseScale, baseScale);
+
       if (performance.now() < emoteEndAt) {
         if (activeEmote === "Celebración") {
-          world.position.y = baseY + Math.abs(Math.sin(t * 3.8)) * 0.10;
+          world.position.y = restPose.y + Math.abs(Math.sin(t * 3.8)) * 0.10;
         } else if (activeEmote === "Sonrisa") {
-          modelRoot.rotation.y = Math.sin(t * 2.3) * 0.12;
+          modelRoot.rotation.y += Math.sin(t * 2.3) * 0.10;
         } else if (activeEmote === "Energía") {
           const pulse = 1 + Math.sin(t * 7.2) * 0.035;
-          modelRoot.scale.setScalar(pulse);
+          modelRoot.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
         } else if (activeEmote === "Corazón") {
-          modelRoot.rotation.y = Math.sin(t * 2.0) * 0.12;
+          modelRoot.rotation.y += Math.sin(t * 2.0) * 0.10;
           modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
-        } else {
-          modelRoot.scale.set(1, 1, 1);
-          modelRoot.rotation.z = 0;
         }
       } else {
         activeEmote = "";
-        modelRoot.scale.set(1, 1, 1);
         modelRoot.rotation.z = 0;
       }
     }
-
-    // Cubo debug
-    testBox.rotation.x += 0.01;
-    testBox.rotation.y += 0.02;
 
     renderer.render(scene, camera);
   }
@@ -368,6 +397,16 @@ if (!canvas || !stage) {
       resizeTo();
       renderer.render(scene, camera);
     },
+    setFacingMode(mode) {
+      currentFacing = mode === "environment" ? "environment" : "user";
+      updateViewPose();
+
+      if (currentFacing === "user") {
+        setStatus("Jugador listo · selfie");
+      } else {
+        setStatus("Jugador listo · cámara trasera");
+      }
+    },
     playEmote(label) {
       activeEmote = label || "";
       emoteEndAt = performance.now() + 1800;
@@ -380,7 +419,6 @@ if (!canvas || !stage) {
     resetEmote() {
       activeEmote = "";
       emoteEndAt = 0;
-      modelRoot.scale.set(1, 1, 1);
       modelRoot.rotation.set(0, 0, 0);
 
       if (defaultAction) {
