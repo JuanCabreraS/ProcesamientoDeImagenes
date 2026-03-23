@@ -8,42 +8,28 @@ function setupHomeButtons() {
 
 document.addEventListener("DOMContentLoaded", () => {
   setupHomeButtons();
-  setupLandingPage();
+  setupQRPage();
   setupTriviaPage();
   setupPlayerPage();
   setupPhotoPage();
   setupCapturedPage();
 });
 
-// -------------------------------------
-// Pantalla principal
-// -------------------------------------
-function setupLandingPage() {
-  const markerScene = document.getElementById("markerScene");
-  if (markerScene) {
-    setupMarkerLandingPage(markerScene);
-    return;
-  }
-
+// Pagina QR / index legado
+function setupQRPage() {
   const video = document.getElementById("qrVideo");
-  if (video) {
-    setupLegacyQRPage(video);
-  }
-}
+  if (!video) return;
 
-function setupLegacyQRPage(video) {
   const scanBtn = document.getElementById("scanBtn");
   const switchBtn = document.getElementById("switchQrCamBtn");
   const statusEl = document.getElementById("qrStatus");
   const frame = document.querySelector(".scan-frame");
 
-  const setStatus = (text) => {
-    if (statusEl) statusEl.textContent = text;
-  };
+  const setStatus = (t) => { if (statusEl) statusEl.textContent = t; };
 
   const stop = () => {
     frame?.classList.remove("is-live");
-    window.CameraUtils?.stopCamera(video);
+    window.CameraUtils.stopCamera(video);
   };
 
   async function startPreview() {
@@ -54,7 +40,7 @@ function setupLegacyQRPage(video) {
       setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
-      setStatus("No se pudo abrir la cámara (permiso/HTTPS).");
+      setStatus("No se pudo abrir la cámara");
     }
   }
 
@@ -75,7 +61,7 @@ function setupLegacyQRPage(video) {
       setStatus("Cámara cambiada");
     } catch (error) {
       console.error(error);
-      setStatus("No hay otra cámara disponible.");
+      setStatus("No hay otra cámara disponible");
     }
   });
 
@@ -85,153 +71,7 @@ function setupLegacyQRPage(video) {
   });
 }
 
-function setupMarkerLandingPage(markerScene) {
-  const scanBtn = document.getElementById("scanBtn");
-  const switchBtn = document.getElementById("switchQrCamBtn");
-  const statusEl = document.getElementById("qrStatus");
-  const frame = document.getElementById("markerFrame");
-  const target = document.getElementById("markerTarget");
-  const bgVideo = document.getElementById("markerBgVideo");
-
-  let unlocked = false;
-  let previewBound = false;
-  let previewRetryTimer = null;
-
-  const setStatus = (text) => {
-    if (statusEl) statusEl.textContent = text;
-  };
-
-  const unlockTrivia = () => {
-    unlocked = true;
-    frame?.classList.add("is-detected");
-    scanBtn?.removeAttribute("disabled");
-    if (scanBtn) {
-      scanBtn.innerHTML = '<span class="bolt" aria-hidden="true">⚡</span> Comenzar trivia';
-    }
-    sessionStorage.setItem("markerUnlocked", "1");
-    setStatus("Jugador detectado. Ya puedes continuar a la trivia.");
-  };
-
-  const prepareSceneVisuals = () => {
-    markerScene.style.background = "transparent";
-
-    const canvas = markerScene.canvas;
-    if (canvas) {
-      canvas.style.position = "absolute";
-      canvas.style.inset = "0";
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      canvas.style.background = "transparent";
-      canvas.style.pointerEvents = "none";
-    }
-
-    const renderer = markerScene.renderer;
-    if (renderer) {
-      renderer.setClearColor(0x000000, 0);
-      if (typeof renderer.setClearAlpha === "function") {
-        renderer.setClearAlpha(0);
-      }
-    }
-  };
-
-  const attachMindARPreview = () => {
-    if (previewBound || !bgVideo) return previewBound;
-
-    const arSystem = markerScene.systems && markerScene.systems["mindar-image-system"];
-    const srcVideo = arSystem && arSystem.video;
-
-    if (!srcVideo) return false;
-
-    const syncStream = () => {
-      const stream = srcVideo.srcObject;
-      if (!stream) return false;
-
-      if (bgVideo.srcObject !== stream) {
-        bgVideo.srcObject = stream;
-      }
-
-      bgVideo.muted = true;
-      bgVideo.setAttribute("playsinline", "");
-      bgVideo.play().catch(() => {});
-      frame?.classList.add("is-live");
-      previewBound = true;
-      return true;
-    };
-
-    if (syncStream()) return true;
-
-    srcVideo.addEventListener("loadedmetadata", syncStream, { once: true });
-    srcVideo.addEventListener("canplay", syncStream, { once: true });
-
-    return false;
-  };
-
-  const schedulePreviewAttach = (attempt = 0) => {
-    if (attachMindARPreview()) return;
-    if (attempt > 30) return;
-
-    clearTimeout(previewRetryTimer);
-    previewRetryTimer = setTimeout(() => {
-      prepareSceneVisuals();
-      schedulePreviewAttach(attempt + 1);
-    }, 180);
-  };
-
-  switchBtn?.setAttribute("disabled", "disabled");
-
-  if (sessionStorage.getItem("markerUnlocked") === "1") {
-    unlockTrivia();
-  } else {
-    setStatus("Inicializando cámara AR…");
-  }
-
-  markerScene.addEventListener("loaded", prepareSceneVisuals);
-  markerScene.addEventListener("renderstart", () => {
-    prepareSceneVisuals();
-    schedulePreviewAttach();
-  });
-
-  markerScene.addEventListener("arReady", () => {
-    prepareSceneVisuals();
-    schedulePreviewAttach();
-
-    frame?.classList.add("is-live");
-    if (!unlocked) {
-      setStatus("AR listo. Apunta al marcadorweb para desbloquear al jugador.");
-    }
-  });
-
-  markerScene.addEventListener("arError", () => {
-    setStatus("No se pudo iniciar AR. Verifica permisos de cámara y HTTPS.");
-  });
-
-  target?.addEventListener("targetFound", () => {
-    schedulePreviewAttach();
-    unlockTrivia();
-  });
-
-  target?.addEventListener("targetLost", () => {
-    if (unlocked) {
-      setStatus("Jugador desbloqueado. Puedes seguir aunque el marcador ya no esté en cuadro.");
-      return;
-    }
-    frame?.classList.remove("is-detected");
-    setStatus("Marcador fuera de cuadro. Vuelve a apuntar al marcadorweb.");
-  });
-
-  scanBtn?.addEventListener("click", () => {
-    if (!unlocked) {
-      alert("Primero detecta el marcadorweb para desbloquear la trivia.");
-      return;
-    }
-
-    window.location.href = encodeURI("Pantalla Trivia.html");
-  });
-}
-
-// -------------------------------------
 // Pantalla Trivia
-// -------------------------------------
 function setupTriviaPage() {
   const confirmBtn = document.querySelector(".confirm");
   const answers = Array.from(document.querySelectorAll(".answer"));
@@ -266,9 +106,7 @@ function setupTriviaPage() {
   updateConfirm();
 }
 
-// -------------------------------------
 // Pantalla Jugador
-// -------------------------------------
 function setupPlayerPage() {
   const cta = document.querySelector(".cta-btn");
   if (!cta) return;
@@ -278,25 +116,19 @@ function setupPlayerPage() {
   });
 }
 
-// -------------------------------------
 // Utilidades de captura
-// -------------------------------------
 const PHOTO_FILTERS = [
   { label: "Normal", canvasFilter: "none" },
-  { label: "Frío", canvasFilter: "saturate(1.12) contrast(1.04) hue-rotate(10deg)" },
-  { label: "B&N", canvasFilter: "grayscale(1) contrast(1.10)" },
-  { label: "Cálido", canvasFilter: "sepia(0.24) saturate(1.14) hue-rotate(-12deg)" }
+  { label: "Frío", canvasFilter: "saturate(1.15) contrast(1.05) hue-rotate(12deg)" },
+  { label: "B&N", canvasFilter: "grayscale(1) contrast(1.12)" },
+  { label: "Cálido", canvasFilter: "sepia(0.28) saturate(1.18) hue-rotate(-10deg)" }
 ];
-
-function getSourceSize(source) {
-  const width = source.videoWidth || source.naturalWidth || source.width || 0;
-  const height = source.videoHeight || source.naturalHeight || source.height || 0;
-  return { width, height };
-}
 
 function drawSourceCover(ctx, source, outWidth, outHeight, options = {}) {
   const { mirror = false, filter = "none" } = options;
-  const { width: sourceWidth, height: sourceHeight } = getSourceSize(source);
+
+  const sourceWidth = source.videoWidth || source.width || source.naturalWidth || 0;
+  const sourceHeight = source.videoHeight || source.height || source.naturalHeight || 0;
   if (!sourceWidth || !sourceHeight) return;
 
   const sourceRatio = sourceWidth / sourceHeight;
@@ -388,7 +220,7 @@ function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options 
 
   drawSourceCover(ctx, videoEl, width, height, { mirror, filter });
 
-  if (overlayCanvas && getSourceSize(overlayCanvas).width) {
+  if (overlayCanvas && overlayCanvas.width && overlayCanvas.height) {
     window.ARPhoto?.resizeTo?.();
     window.ARPhoto?.renderOnce?.();
     drawSourceCover(ctx, overlayCanvas, width, height, { mirror, filter });
@@ -401,9 +233,7 @@ function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options 
   return outCanvas.toDataURL("image/png");
 }
 
-// -------------------------------------
 // Pantalla Foto
-// -------------------------------------
 function setupPhotoPage() {
   const shutterBtn = document.getElementById("shutterBtn");
   if (!shutterBtn) return;
@@ -447,8 +277,12 @@ function setupPhotoPage() {
   function applyFilter(index) {
     currentFilterIndex = (index + PHOTO_FILTERS.length) % PHOTO_FILTERS.length;
     const preset = PHOTO_FILTERS[currentFilterIndex];
+
+    video.style.filter = preset.canvasFilter;
+    if (overlayCanvas) overlayCanvas.style.filter = preset.canvasFilter;
+
     document.body.dataset.filterIndex = String(currentFilterIndex);
-    effectsLabel.textContent = `Filtro: ${preset.label}`;
+    if (effectsLabel) effectsLabel.textContent = `Filtro: ${preset.label}`;
     effectsBtn?.classList.toggle("is-active", currentFilterIndex > 0);
     effectsBtn?.setAttribute("aria-pressed", String(currentFilterIndex > 0));
   }
@@ -516,7 +350,7 @@ function setupPhotoPage() {
 
       currentFacing = video.dataset.facing || facingMode;
       syncFacingUI();
-      setStatus("Listo para la foto");
+      setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
       setStatus("No se pudo abrir la cámara (permiso/HTTPS).");
@@ -543,7 +377,7 @@ function setupPhotoPage() {
       await window.CameraUtils.switchCamera(video);
       currentFacing = video.dataset.facing || (currentFacing === "user" ? "environment" : "user");
       syncFacingUI();
-      setStatus("Listo para la foto");
+      setStatus("Cámara cambiada");
     } catch (error) {
       console.error(error);
       setStatus("No hay otra cámara disponible.");
@@ -578,9 +412,7 @@ function setupPhotoPage() {
   });
 }
 
-// -------------------------------------
 // Pantalla Foto Capturada
-// -------------------------------------
 function setupCapturedPage() {
   const imgEl = document.getElementById("resultImg");
   if (!imgEl) return;

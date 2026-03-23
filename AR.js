@@ -12,7 +12,7 @@ function setStatus(text) {
 }
 
 if (!canvas || !stage) {
-  console.warn("AR.js: No se encontró .ar-stage o #arCanvas");
+  console.warn("AR.js: no se encontró #arCanvas o .ar-stage");
 } else {
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -28,15 +28,10 @@ if (!canvas || !stage) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const scene = new THREE.Scene();
-
-  // Cámara más cercana y con mejor encuadre para móvil
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
-  camera.position.set(0.2, 1.2, 4.6);
-  camera.lookAt(0.2, 0.95, 0);
   scene.add(camera);
 
-  // Luces
-  scene.add(new THREE.AmbientLight(0xffffff, 1.15));
+  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
   hemi.position.set(0, 5, 0);
@@ -89,6 +84,7 @@ if (!canvas || !stage) {
       opacity: 0.95
     })
   );
+
   shadowPlane.rotation.x = -Math.PI / 2;
   shadowPlane.position.set(0, 0.015, 0);
   world.add(shadowPlane);
@@ -103,11 +99,9 @@ if (!canvas || !stage) {
   let activeEmote = "";
   let emoteEndAt = 0;
   let modelReady = false;
-  let model = null;
-
-  // Pose base más visible
-  const restPose = new THREE.Vector3(0.35, -0.9, 0);
   let isPortrait = true;
+
+  const restPose = new THREE.Vector3(0.35, -0.9, 0);
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -120,11 +114,10 @@ if (!canvas || !stage) {
     camera.aspect = rect.width / rect.height;
     isPortrait = rect.height >= rect.width;
 
-    // Mucho más centrado y visible
-    restPose.set(isPortrait ? 0.35 : 0.65, isPortrait ? -0.9 : -0.75, 0);
+    restPose.set(isPortrait ? 0.35 : 0.62, isPortrait ? -0.88 : -0.74, 0);
     world.position.copy(restPose);
 
-    camera.position.set(restPose.x, 1.2, isPortrait ? 4.6 : 4.9);
+    camera.position.set(restPose.x, isPortrait ? 1.18 : 1.15, isPortrait ? 4.45 : 4.75);
     camera.lookAt(restPose.x, 0.95, 0);
     camera.updateProjectionMatrix();
 
@@ -139,7 +132,6 @@ if (!canvas || !stage) {
     let box = new THREE.Box3().setFromObject(object3D);
     const center = box.getCenter(new THREE.Vector3());
 
-    // Centrar modelo en X/Z y apoyar los pies
     object3D.position.x -= center.x;
     object3D.position.z -= center.z;
     object3D.position.y -= box.min.y;
@@ -147,8 +139,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    // Escala menos agresiva
-    const targetHeight = 1.8;
+    const targetHeight = 1.82;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
@@ -163,7 +154,7 @@ if (!canvas || !stage) {
     const finalSize = box.getSize(new THREE.Vector3());
 
     shadowPlane.scale.set(
-      Math.max(1.1, finalSize.x * 1.12),
+      Math.max(1.05, finalSize.x * 1.08),
       Math.max(1.0, finalSize.z * 3.0),
       1
     );
@@ -240,7 +231,8 @@ if (!canvas || !stage) {
       found = actions.find((a) =>
         a.name.includes("idle") ||
         a.name.includes("pose") ||
-        a.name.includes("breath")
+        a.name.includes("breath") ||
+        a.name.includes("smile")
       );
     }
 
@@ -256,7 +248,8 @@ if (!canvas || !stage) {
     if (!found && key.includes("cor")) {
       found = actions.find((a) =>
         a.name.includes("pose") ||
-        a.name.includes("idle")
+        a.name.includes("idle") ||
+        a.name.includes("heart")
       );
     }
 
@@ -268,7 +261,7 @@ if (!canvas || !stage) {
   loader.load(
     MODEL_URL,
     (gltf) => {
-      model = gltf.scene;
+      const model = gltf.scene;
 
       model.traverse((node) => {
         if (node.isMesh) {
@@ -316,15 +309,13 @@ if (!canvas || !stage) {
       mixer.update(dt);
     }
 
-    // Bobbing estable con base fija
-    const baseX = isPortrait ? 0.35 : 0.65;
-    const baseY = isPortrait ? -0.9 : -0.75;
-    const bob = Math.sin(t * 1.65) * 0.03;
+    const baseX = isPortrait ? 0.35 : 0.62;
+    const baseY = isPortrait ? -0.88 : -0.74;
+    const bob = Math.sin(t * 1.65) * 0.028;
 
     world.position.set(baseX, baseY + bob, 0);
 
     if (modelReady) {
-      // Reset base por frame para evitar acumulaciones raras
       modelRoot.rotation.set(0, Math.sin(t * 0.65) * 0.05, 0);
       modelRoot.scale.set(1, 1, 1);
 
