@@ -108,28 +108,26 @@ if (!canvas || !stage) {
   const restPose = new THREE.Vector3(0, 0, 0);
 
   function getViewConfig() {
-    // frontal = selfie: grande, cerca y a un lado
-    if (currentFacing === "user") {
-      return {
-        x: isPortrait ? 0.58 : 0.72,
-        y: isPortrait ? -0.84 : -0.72,
-        scale: isPortrait ? 0.98 : 0.92,
-        distanceFactor: isPortrait ? 1.60 : 1.72,
-        distanceOffset: isPortrait ? 0.75 : 0.92,
-        lookOffsetX: isPortrait ? -0.08 : -0.06
-      };
-    }
-
-    // trasera = centrado y más al fondo
+  if (currentFacing === "user") {
     return {
-      x: 0,
-      y: isPortrait ? -0.34 : -0.28,
-      scale: isPortrait ? 0.58 : 0.54,
-      distanceFactor: isPortrait ? 2.55 : 2.75,
-      distanceOffset: isPortrait ? 2.05 : 2.30,
-      lookOffsetX: 0
+      x: isPortrait ? 0.58 : 0.72,
+      y: isPortrait ? -2.55 : -1.12,
+      scale: isPortrait ? 0.90 : 0.86,
+      distanceFactor: isPortrait ? 2.20 : 2.30,
+      distanceOffset: isPortrait ? 1.55 : 1.70,
+      lookOffsetX: isPortrait ? -0.08 : -0.06
     };
   }
+
+  return {
+    x: 0,
+    y: isPortrait ? -1.92 : -0.78,
+    scale: isPortrait ? 0.50 : 0.46,
+    distanceFactor: isPortrait ? 3.20 : 3.35,
+    distanceOffset: isPortrait ? 2.95 : 3.15,
+    lookOffsetX: 0
+  };
+}
 
   function updateViewPose() {
     const cfg = getViewConfig();
