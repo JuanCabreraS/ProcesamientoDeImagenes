@@ -527,7 +527,7 @@ function setupPhotoPage() {
     }
   }
 
-  startPreview("user");
+  startPreview("enviroment");
 
   emoteButtons.forEach((button) => {
     button.addEventListener("click", () => {

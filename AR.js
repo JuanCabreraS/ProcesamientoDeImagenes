@@ -1,7 +1,7 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "https://esm.sh/three@0.160.0";
+import { GLTFLoader } from "https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
-const MODEL_URL = new URL("./Futbolista.glb", import.meta.url).href;
+const MODEL_URL = new URL("Futbolista.glb", import.meta.url).href;
 
 const canvas = document.getElementById("arCanvas");
 const stage = document.querySelector(".ar-stage");
@@ -30,6 +30,7 @@ if (!canvas || !stage) {
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
   scene.add(camera);
 
+  // Luces
   scene.add(new THREE.AmbientLight(0xffffff, 1.25));
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
@@ -44,12 +45,14 @@ if (!canvas || !stage) {
   fill.position.set(-3, 2.5, 3);
   scene.add(fill);
 
+  // Grupos principales
   const world = new THREE.Group();
   scene.add(world);
 
   const modelRoot = new THREE.Group();
   world.add(modelRoot);
 
+  // Sombra falsa
   function createShadowTexture() {
     const size = 256;
     const c = document.createElement("canvas");
@@ -65,7 +68,9 @@ if (!canvas || !stage) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
 
-    return new THREE.CanvasTexture(c);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
   }
 
   const shadowPlane = new THREE.Mesh(
@@ -92,7 +97,7 @@ if (!canvas || !stage) {
   let modelReady = false;
 
   let isPortrait = true;
-  let currentFacing = "user";
+  let currentFacing = "environment";
 
   let finalWidth = 1.0;
   let finalHeight = 1.8;
@@ -103,64 +108,64 @@ if (!canvas || !stage) {
   const restPose = new THREE.Vector3(0, 0, 0);
 
   function getViewConfig() {
-  // frontal = selfie: más grande y a un lado
-  if (currentFacing === "user") {
+    // frontal = selfie: grande, cerca y a un lado
+    if (currentFacing === "user") {
+      return {
+        x: isPortrait ? 0.58 : 0.72,
+        y: isPortrait ? -0.84 : -0.72,
+        scale: isPortrait ? 0.98 : 0.92,
+        distanceFactor: isPortrait ? 1.60 : 1.72,
+        distanceOffset: isPortrait ? 0.75 : 0.92,
+        lookOffsetX: isPortrait ? -0.08 : -0.06
+      };
+    }
+
+    // trasera = centrado y más al fondo
     return {
-      x: isPortrait ? 0.88 : 1.02,
-      y: isPortrait ? -1.02 : -0.88,
-      scale: isPortrait ? 1.28 : 1.16,
-      distanceFactor: isPortrait ? 1.22 : 1.30,
-      distanceOffset: isPortrait ? 0.18 : 0.30,
-      lookOffsetX: isPortrait ? -0.10 : -0.08
+      x: 0,
+      y: isPortrait ? -0.34 : -0.28,
+      scale: isPortrait ? 0.58 : 0.54,
+      distanceFactor: isPortrait ? 2.55 : 2.75,
+      distanceOffset: isPortrait ? 2.05 : 2.30,
+      lookOffsetX: 0
     };
   }
 
-  // trasera = normal: centrado y más al fondo
-  return {
-    x: 0,
-    y: isPortrait ? -0.66 : -0.60,
-    scale: isPortrait ? 0.86 : 0.80,
-    distanceFactor: isPortrait ? 2.00 : 2.15,
-    distanceOffset: isPortrait ? 1.20 : 1.35,
-    lookOffsetX: 0
-  };
-}
-
   function updateViewPose() {
-  const cfg = getViewConfig();
+    const cfg = getViewConfig();
 
-  restPose.set(cfg.x, cfg.y, 0);
-  world.position.copy(restPose);
+    restPose.set(cfg.x, cfg.y, 0);
+    world.position.copy(restPose);
 
-  const scaledW = finalWidth * cfg.scale;
-  const scaledH = finalHeight * cfg.scale;
-  const scaledD = finalDepth * cfg.scale;
-  const maxDim = Math.max(scaledW, scaledH, scaledD);
+    const scaledW = finalWidth * cfg.scale;
+    const scaledH = finalHeight * cfg.scale;
+    const scaledD = finalDepth * cfg.scale;
+    const maxDim = Math.max(scaledW, scaledH, scaledD);
 
-  const fov = THREE.MathUtils.degToRad(camera.fov);
-  const dist = ((maxDim / 2) / Math.tan(fov / 2)) * cfg.distanceFactor;
+    const fov = THREE.MathUtils.degToRad(camera.fov);
+    const dist = ((maxDim / 2) / Math.tan(fov / 2)) * cfg.distanceFactor;
 
-  camera.position.set(
-    cfg.x,
-    scaledH * (currentFacing === "user" ? 0.62 : 0.55),
-    dist + cfg.distanceOffset
-  );
+    camera.position.set(
+      cfg.x,
+      scaledH * (currentFacing === "user" ? 0.62 : 0.55),
+      dist + cfg.distanceOffset
+    );
 
-  camera.lookAt(
-    cfg.x + cfg.lookOffsetX,
-    scaledH * (currentFacing === "user" ? 0.50 : 0.46),
-    0
-  );
+    camera.lookAt(
+      cfg.x + cfg.lookOffsetX,
+      scaledH * (currentFacing === "user" ? 0.50 : 0.46),
+      0
+    );
 
-  camera.updateProjectionMatrix();
+    camera.updateProjectionMatrix();
 
-  shadowPlane.position.x = cfg.x;
-  shadowPlane.scale.set(
-    baseShadowX * cfg.scale,
-    baseShadowY * cfg.scale,
-    1
-  );
-}
+    shadowPlane.position.x = cfg.x;
+    shadowPlane.scale.set(
+      baseShadowX * cfg.scale,
+      baseShadowY * cfg.scale,
+      1
+    );
+  }
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -185,6 +190,7 @@ if (!canvas || !stage) {
     let box = new THREE.Box3().setFromObject(object3D);
     const center = box.getCenter(new THREE.Vector3());
 
+    // Centrar y apoyar pies
     object3D.position.x -= center.x;
     object3D.position.z -= center.z;
     object3D.position.y -= box.min.y;
@@ -357,7 +363,7 @@ if (!canvas || !stage) {
     if (mixer) mixer.update(dt);
 
     const cfg = getViewConfig();
-    const bob = Math.sin(t * 1.65) * (currentFacing === "user" ? 0.028 : 0.018);
+    const bob = Math.sin(t * 1.65) * (currentFacing === "user" ? 0.022 : 0.012);
 
     world.position.set(restPose.x, restPose.y + bob, 0);
 
@@ -378,6 +384,8 @@ if (!canvas || !stage) {
         } else if (activeEmote === "Corazón") {
           modelRoot.rotation.y += Math.sin(t * 2.0) * 0.10;
           modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
+        } else {
+          modelRoot.rotation.z = 0;
         }
       } else {
         activeEmote = "";
@@ -398,7 +406,7 @@ if (!canvas || !stage) {
       renderer.render(scene, camera);
     },
     setFacingMode(mode) {
-      currentFacing = mode === "environment" ? "environment" : "user";
+      currentFacing = mode === "user" ? "user" : "environment";
       updateViewPose();
 
       if (currentFacing === "user") {

@@ -110,7 +110,7 @@ body.page-foto{
   display: block;
 }
 
-/* ------------------ floating labels ------------------ */
+/* ------------------ labels ------------------ */
 
 .photo-status{
   position: absolute;
@@ -228,7 +228,7 @@ body.page-foto{
   display: inline-flex;
 }
 
-/* ------------------ capture controls ------------------ */
+/* ------------------ bottom controls ------------------ */
 
 .capture-panel{
   position: absolute;
@@ -301,8 +301,6 @@ body.page-foto{
   height: 30px;
   color: #fff;
 }
-
-/* ------------------ hidden canvas ------------------ */
 
 .hidden-canvas{
   position: fixed;
