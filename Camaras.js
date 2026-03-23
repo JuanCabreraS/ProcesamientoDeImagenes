@@ -8,24 +8,38 @@ function setupHomeButtons() {
 
 document.addEventListener("DOMContentLoaded", () => {
   setupHomeButtons();
-  setupQRPage();
+  setupLandingPage();
   setupTriviaPage();
   setupPlayerPage();
   setupPhotoPage();
   setupCapturedPage();
 });
 
-// Pagina QR / index legado
-function setupQRPage() {
-  const video = document.getElementById("qrVideo");
-  if (!video) return;
+// -------------------------------------
+// Pantalla principal / index
+// -------------------------------------
+function setupLandingPage() {
+  const markerScene = document.getElementById("markerScene");
+  if (markerScene) {
+    setupMarkerLandingPage(markerScene);
+    return;
+  }
 
+  const video = document.getElementById("qrVideo");
+  if (video) {
+    setupLegacyQRPage(video);
+  }
+}
+
+function setupLegacyQRPage(video) {
   const scanBtn = document.getElementById("scanBtn");
   const switchBtn = document.getElementById("switchQrCamBtn");
   const statusEl = document.getElementById("qrStatus");
   const frame = document.querySelector(".scan-frame");
 
-  const setStatus = (t) => { if (statusEl) statusEl.textContent = t; };
+  const setStatus = (t) => {
+    if (statusEl) statusEl.textContent = t;
+  };
 
   const stop = () => {
     frame?.classList.remove("is-live");
@@ -71,7 +85,196 @@ function setupQRPage() {
   });
 }
 
+function setupMarkerLandingPage(markerScene) {
+  const scanBtn = document.getElementById("scanBtn");
+  const switchBtn = document.getElementById("switchQrCamBtn");
+  const statusEl = document.getElementById("qrStatus");
+  const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
+  const target = document.getElementById("markerTarget");
+  const bgVideo = document.getElementById("markerBgVideo");
+
+  let unlocked = false;
+  let previewBound = false;
+  let previewRetryTimer = null;
+
+  const setStatus = (text) => {
+    if (statusEl) statusEl.textContent = text;
+  };
+
+  const unlockTrivia = () => {
+    unlocked = true;
+    frame?.classList.add("is-detected");
+    scanBtn?.removeAttribute("disabled");
+
+    if (scanBtn) {
+      scanBtn.innerHTML = '<span class="bolt" aria-hidden="true">⚡</span> Comenzar trivia';
+    }
+
+    sessionStorage.setItem("markerUnlocked", "1");
+    setStatus("Jugador detectado. Ya puedes continuar a la trivia.");
+  };
+
+  const prepareSceneVisuals = () => {
+    markerScene.style.background = "transparent";
+
+    const canvas = markerScene.canvas;
+    if (canvas) {
+      canvas.style.position = "absolute";
+      canvas.style.inset = "0";
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.background = "transparent";
+      canvas.style.pointerEvents = "none";
+    }
+
+    const renderer = markerScene.renderer;
+    if (renderer) {
+      renderer.setClearColor(0x000000, 0);
+      if (typeof renderer.setClearAlpha === "function") {
+        renderer.setClearAlpha(0);
+      }
+    }
+  };
+
+  const attachMindARPreview = () => {
+    if (!bgVideo) return false;
+
+    const arSystem = markerScene.systems && markerScene.systems["mindar-image-system"];
+    const srcVideo = arSystem && arSystem.video;
+    if (!srcVideo) return false;
+
+    const syncStream = () => {
+      const stream = srcVideo.srcObject;
+      if (!stream) return false;
+
+      if (bgVideo.srcObject !== stream) {
+        bgVideo.srcObject = stream;
+      }
+
+      bgVideo.muted = true;
+      bgVideo.defaultMuted = true;
+      bgVideo.setAttribute("muted", "");
+      bgVideo.setAttribute("autoplay", "");
+      bgVideo.setAttribute("playsinline", "");
+      bgVideo.playsInline = true;
+
+      const playPromise = bgVideo.play();
+      if (playPromise?.catch) {
+        playPromise.catch(() => {});
+      }
+
+      frame?.classList.add("is-live");
+      previewBound = true;
+      return true;
+    };
+
+    if (syncStream()) return true;
+
+    srcVideo.addEventListener("loadedmetadata", syncStream);
+    srcVideo.addEventListener("canplay", syncStream);
+    srcVideo.addEventListener("playing", syncStream);
+
+    return false;
+  };
+
+  const schedulePreviewAttach = (attempt = 0) => {
+    if (attachMindARPreview()) return;
+
+    clearTimeout(previewRetryTimer);
+    previewRetryTimer = setTimeout(() => {
+      prepareSceneVisuals();
+
+      if (!bgVideo?.srcObject || bgVideo.readyState < 2) {
+        previewBound = false;
+      }
+
+      schedulePreviewAttach(attempt + 1);
+    }, attempt < 30 ? 180 : 500);
+  };
+
+  const forcePreviewRecovery = () => {
+    previewBound = false;
+    prepareSceneVisuals();
+    schedulePreviewAttach();
+  };
+
+  switchBtn?.setAttribute("disabled", "disabled");
+
+  if (sessionStorage.getItem("markerUnlocked") === "1") {
+    unlockTrivia();
+  } else {
+    setStatus("Inicializando cámara AR…");
+  }
+
+  markerScene.addEventListener("loaded", () => {
+    prepareSceneVisuals();
+    schedulePreviewAttach();
+  });
+
+  markerScene.addEventListener("renderstart", () => {
+    prepareSceneVisuals();
+    schedulePreviewAttach();
+  });
+
+  markerScene.addEventListener("arReady", () => {
+    prepareSceneVisuals();
+    schedulePreviewAttach();
+
+    frame?.classList.add("is-live");
+
+    if (!unlocked) {
+      setStatus("AR listo. Apunta al marcador para desbloquear al jugador.");
+    }
+
+    // Reintentos extra en móvil
+    setTimeout(forcePreviewRecovery, 800);
+    setTimeout(forcePreviewRecovery, 1800);
+  });
+
+  markerScene.addEventListener("arError", () => {
+    setStatus("No se pudo iniciar AR. Verifica permisos de cámara y HTTPS.");
+  });
+
+  target?.addEventListener("targetFound", () => {
+    schedulePreviewAttach();
+    unlockTrivia();
+  });
+
+  target?.addEventListener("targetLost", () => {
+    if (unlocked) {
+      setStatus("Jugador desbloqueado. Puedes seguir aunque el marcador ya no esté en cuadro.");
+      return;
+    }
+
+    frame?.classList.remove("is-detected");
+    setStatus("Marcador fuera de cuadro. Vuelve a apuntar al marcador.");
+  });
+
+  scanBtn?.addEventListener("click", () => {
+    if (!unlocked) {
+      alert("Primero detecta el marcador para desbloquear la trivia.");
+      return;
+    }
+
+    window.location.href = encodeURI("Pantalla Trivia.html");
+  });
+
+  window.addEventListener("pageshow", forcePreviewRecovery);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      forcePreviewRecovery();
+    }
+  });
+
+  bgVideo?.addEventListener("emptied", forcePreviewRecovery);
+  bgVideo?.addEventListener("stalled", forcePreviewRecovery);
+  bgVideo?.addEventListener("suspend", forcePreviewRecovery);
+}
+
+// -------------------------------------
 // Pantalla Trivia
+// -------------------------------------
 function setupTriviaPage() {
   const confirmBtn = document.querySelector(".confirm");
   const answers = Array.from(document.querySelectorAll(".answer"));
@@ -106,7 +309,9 @@ function setupTriviaPage() {
   updateConfirm();
 }
 
+// -------------------------------------
 // Pantalla Jugador
+// -------------------------------------
 function setupPlayerPage() {
   const cta = document.querySelector(".cta-btn");
   if (!cta) return;
@@ -116,7 +321,9 @@ function setupPlayerPage() {
   });
 }
 
+// -------------------------------------
 // Utilidades de captura
+// -------------------------------------
 const PHOTO_FILTERS = [
   { label: "Normal", canvasFilter: "none" },
   { label: "Frío", canvasFilter: "saturate(1.15) contrast(1.05) hue-rotate(12deg)" },
@@ -233,7 +440,9 @@ function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options 
   return outCanvas.toDataURL("image/png");
 }
 
+// -------------------------------------
 // Pantalla Foto
+// -------------------------------------
 function setupPhotoPage() {
   const shutterBtn = document.getElementById("shutterBtn");
   if (!shutterBtn) return;
@@ -412,7 +621,9 @@ function setupPhotoPage() {
   });
 }
 
+// -------------------------------------
 // Pantalla Foto Capturada
+// -------------------------------------
 function setupCapturedPage() {
   const imgEl = document.getElementById("resultImg");
   if (!imgEl) return;
