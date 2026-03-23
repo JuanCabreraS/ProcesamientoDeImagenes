@@ -285,13 +285,10 @@ function setupTriviaPage() {
   });
 
   confirmBtn.addEventListener("click", () => {
-    window.location.href = encodeURI("Pantalla Trivia.html").includes("Pantalla Trivia.html")
-      ? (window.location.href = encodeURI("Pantalla Jugador.html"))
-      : null;
+  window.location.href = encodeURI("Pantalla Jugador.html");
   });
-
-  updateConfirm();
-}
+    updateConfirm();
+  }
 
 // -------------------------------------
 // Pantalla Jugador
