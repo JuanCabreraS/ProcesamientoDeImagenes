@@ -8,7 +8,6 @@ function setupHomeButtons() {
 
 document.addEventListener("DOMContentLoaded", () => {
   setupHomeButtons();
-
   setupLandingPage();
   setupTriviaPage();
   setupPlayerPage();
@@ -284,9 +283,9 @@ function setupPlayerPage() {
 // -------------------------------------
 const PHOTO_FILTERS = [
   { label: "Normal", canvasFilter: "none" },
-  { label: "Frío", canvasFilter: "saturate(1.15) contrast(1.05) hue-rotate(12deg)" },
-  { label: "B&N", canvasFilter: "grayscale(1) contrast(1.12)" },
-  { label: "Cálido", canvasFilter: "sepia(0.28) saturate(1.18) hue-rotate(-10deg)" }
+  { label: "Frío", canvasFilter: "saturate(1.12) contrast(1.04) hue-rotate(10deg)" },
+  { label: "B&N", canvasFilter: "grayscale(1) contrast(1.10)" },
+  { label: "Cálido", canvasFilter: "sepia(0.24) saturate(1.14) hue-rotate(-12deg)" }
 ];
 
 function getSourceSize(source) {
@@ -373,9 +372,9 @@ function drawEmoteSticker(ctx, outWidth, outHeight, emote) {
   ctx.restore();
 }
 
-function takeCompositePhoto(videoEl, outCanvas, cardEl, overlayCanvas, options = {}) {
+function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options = {}) {
   const { mirror = false, filter = "none", emote = null } = options;
-  const rect = cardEl.getBoundingClientRect();
+  const rect = stageEl.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
   const width = Math.max(1, Math.floor(rect.width * dpr));
@@ -412,7 +411,7 @@ function setupPhotoPage() {
   const video = document.getElementById("photoVideo");
   const overlayCanvas = document.getElementById("arCanvas");
   const outCanvas = document.getElementById("photoCanvas");
-  const card = document.querySelector(".player-card");
+  const stage = document.querySelector(".ar-stage");
   const switchBtn = document.getElementById("switchCamBtn");
   const statusEl = document.getElementById("photoStatus");
   const backBtn = document.getElementById("backBtn");
@@ -426,7 +425,7 @@ function setupPhotoPage() {
   const emoteStickerEmoji = emoteSticker?.querySelector(".emote-sticker__emoji");
   const emoteStickerLabel = emoteSticker?.querySelector(".emote-sticker__label");
 
-  if (!video || !card || !outCanvas) return;
+  if (!video || !stage || !outCanvas) return;
 
   let currentFacing = "user";
   let currentFilterIndex = 0;
@@ -437,22 +436,17 @@ function setupPhotoPage() {
   };
 
   const syncFacingUI = () => {
-    card.classList.toggle("is-selfie", currentFacing === "user");
+    stage.classList.toggle("is-selfie", currentFacing === "user");
   };
 
   const stop = () => {
     window.CameraUtils.stopCamera(video);
-    card.classList.remove("is-live");
     setStatus("Cámara detenida");
   };
 
   function applyFilter(index) {
     currentFilterIndex = (index + PHOTO_FILTERS.length) % PHOTO_FILTERS.length;
     const preset = PHOTO_FILTERS[currentFilterIndex];
-
-    video.style.filter = preset.canvasFilter;
-    if (overlayCanvas) overlayCanvas.style.filter = preset.canvasFilter;
-
     document.body.dataset.filterIndex = String(currentFilterIndex);
     effectsLabel.textContent = `Filtro: ${preset.label}`;
     effectsBtn?.classList.toggle("is-active", currentFilterIndex > 0);
@@ -522,8 +516,7 @@ function setupPhotoPage() {
 
       currentFacing = video.dataset.facing || facingMode;
       syncFacingUI();
-      card.classList.add("is-live");
-      setStatus("Cámara lista");
+      setStatus("Listo para la foto");
     } catch (error) {
       console.error(error);
       setStatus("No se pudo abrir la cámara (permiso/HTTPS).");
@@ -550,8 +543,7 @@ function setupPhotoPage() {
       await window.CameraUtils.switchCamera(video);
       currentFacing = video.dataset.facing || (currentFacing === "user" ? "environment" : "user");
       syncFacingUI();
-      card.classList.add("is-live");
-      setStatus("Cámara cambiada");
+      setStatus("Listo para la foto");
     } catch (error) {
       console.error(error);
       setStatus("No hay otra cámara disponible.");
@@ -566,7 +558,7 @@ function setupPhotoPage() {
 
     const filter = PHOTO_FILTERS[currentFilterIndex]?.canvasFilter || "none";
 
-    const dataUrl = takeCompositePhoto(video, outCanvas, card, overlayCanvas, {
+    const dataUrl = takeCompositePhoto(video, outCanvas, stage, overlayCanvas, {
       mirror: currentFacing === "user",
       filter,
       emote: activeEmote
