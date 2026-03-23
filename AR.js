@@ -11,35 +11,9 @@ function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
 
-function makeDebug(host) {
-  const el = document.createElement("div");
-  el.style.position = "absolute";
-  el.style.left = "10px";
-  el.style.top = "72px";
-  el.style.zIndex = "8";
-  el.style.padding = "6px 8px";
-  el.style.borderRadius = "10px";
-  el.style.font = "12px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  el.style.fontWeight = "800";
-  el.style.color = "#fff";
-  el.style.background = "rgba(0,0,0,.42)";
-  el.style.backdropFilter = "blur(8px)";
-  el.style.pointerEvents = "none";
-  el.textContent = "AR: iniciando…";
-  host.appendChild(el);
-  return (msg) => {
-    el.textContent = msg;
-  };
-}
-
 if (!canvas || !stage) {
   console.warn("AR.js: no encontré #arCanvas o .ar-stage");
 } else {
-  const debug = makeDebug(stage);
-
-  canvas.style.pointerEvents = "none";
-  canvas.style.background = "transparent";
-
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
@@ -52,21 +26,20 @@ if (!canvas || !stage) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-
-  const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
+  const camera = new THREE.PerspectiveCamera(28, 1, 0.01, 100);
   scene.add(camera);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+  scene.add(new THREE.AmbientLight(0xffffff, 1.25));
 
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.9);
   hemi.position.set(0, 5, 0);
   scene.add(hemi);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.45);
+  const key = new THREE.DirectionalLight(0xffffff, 1.2);
   key.position.set(3, 5, 4);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xdce8ff, 0.45);
+  const fill = new THREE.DirectionalLight(0xdce8ff, 0.35);
   fill.position.set(-3, 2.5, 3);
   scene.add(fill);
 
@@ -81,9 +54,9 @@ if (!canvas || !stage) {
     const c = document.createElement("canvas");
     c.width = size;
     c.height = size;
-
     const ctx = c.getContext("2d");
     const g = ctx.createRadialGradient(size / 2, size / 2, 18, size / 2, size / 2, size / 2);
+
     g.addColorStop(0, "rgba(0,0,0,0.34)");
     g.addColorStop(0.55, "rgba(0,0,0,0.16)");
     g.addColorStop(1, "rgba(0,0,0,0)");
@@ -114,13 +87,15 @@ if (!canvas || !stage) {
   let mixer = null;
   let actions = [];
   let defaultAction = null;
-  let activeAction = null;
   let activeEmote = "";
   let emoteEndAt = 0;
   let modelReady = false;
+  let finalHeight = 1.8;
+  let finalWidth = 1.0;
+  let finalDepth = 0.6;
   let isPortrait = true;
 
-  const restPose = new THREE.Vector3(0.35, -0.88, 0);
+  const restPose = new THREE.Vector3(0.38, -0.90, 0);
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -133,11 +108,15 @@ if (!canvas || !stage) {
     camera.aspect = rect.width / rect.height;
     isPortrait = rect.height >= rect.width;
 
-    restPose.set(isPortrait ? 0.35 : 0.62, isPortrait ? -0.88 : -0.74, 0);
+    restPose.set(isPortrait ? 0.36 : 0.70, isPortrait ? -0.88 : -0.74, 0);
     world.position.copy(restPose);
 
-    camera.position.set(restPose.x, isPortrait ? 1.18 : 1.15, isPortrait ? 4.45 : 4.75);
-    camera.lookAt(restPose.x, 0.95, 0);
+    const maxDim = Math.max(finalWidth, finalHeight, finalDepth);
+    const fov = THREE.MathUtils.degToRad(camera.fov);
+    const dist = ((maxDim / 2) / Math.tan(fov / 2)) * 1.65;
+
+    camera.position.set(restPose.x, finalHeight * 0.58, dist + 0.8);
+    camera.lookAt(restPose.x, finalHeight * 0.48, 0);
     camera.updateProjectionMatrix();
 
     return true;
@@ -158,7 +137,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 1.82;
+    const targetHeight = 1.85;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
@@ -172,9 +151,13 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const finalSize = box.getSize(new THREE.Vector3());
 
+    finalWidth = finalSize.x;
+    finalHeight = finalSize.y;
+    finalDepth = finalSize.z;
+
     shadowPlane.scale.set(
-      Math.max(1.05, finalSize.x * 1.08),
-      Math.max(1.0, finalSize.z * 3.0),
+      Math.max(1.05, finalWidth * 1.08),
+      Math.max(1.0, finalDepth * 3.0),
       1
     );
   }
@@ -202,16 +185,15 @@ if (!canvas || !stage) {
       defaultAction.setLoop(THREE.LoopRepeat, Infinity);
       defaultAction.fadeIn(0.2);
       defaultAction.play();
-      activeAction = defaultAction;
     }
   }
 
   function playAction(nextAction, once = false) {
     if (!nextAction) return;
 
-    if (activeAction && activeAction !== nextAction) {
-      activeAction.fadeOut(0.18);
-    }
+    actions.forEach(({ action }) => {
+      if (action !== nextAction) action.fadeOut(0.18);
+    });
 
     nextAction.reset();
     nextAction.enabled = true;
@@ -228,7 +210,6 @@ if (!canvas || !stage) {
 
     nextAction.fadeIn(0.18);
     nextAction.play();
-    activeAction = nextAction;
   }
 
   function findActionByLabel(label) {
@@ -250,7 +231,6 @@ if (!canvas || !stage) {
       found = actions.find((a) =>
         a.name.includes("idle") ||
         a.name.includes("pose") ||
-        a.name.includes("breath") ||
         a.name.includes("smile")
       );
     }
@@ -276,7 +256,6 @@ if (!canvas || !stage) {
   }
 
   setStatus("Cargando jugador…");
-  debug("AR: cargando jugador…");
 
   loader.load(
     MODEL_URL,
@@ -285,23 +264,18 @@ if (!canvas || !stage) {
 
       model.traverse((node) => {
         if (node.isMesh) {
-          node.castShadow = true;
-          node.receiveShadow = true;
           node.frustumCulled = false;
-
-          if (node.material) {
-            node.material.needsUpdate = true;
-          }
+          if (node.material) node.material.needsUpdate = true;
         }
       });
 
       modelRoot.add(model);
       fitModelToView(model);
       buildActions(gltf.animations || [], model);
+      resizeTo();
 
       modelReady = true;
       setStatus("Jugador listo");
-      debug(`AR: jugador listo · clips: ${(gltf.animations || []).length}`);
       console.log("GLB cargado", gltf);
       console.log("Animaciones:", (gltf.animations || []).map((a) => a.name));
     },
@@ -309,7 +283,6 @@ if (!canvas || !stage) {
     (error) => {
       console.error("Error cargando Futbolista.glb", error);
       setStatus("No se pudo cargar el jugador");
-      debug("AR: error cargando GLB");
     }
   );
 
@@ -327,24 +300,20 @@ if (!canvas || !stage) {
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
 
-    if (mixer) {
-      mixer.update(dt);
-    }
+    if (mixer) mixer.update(dt);
 
-    const baseX = isPortrait ? 0.35 : 0.62;
+    const baseX = isPortrait ? 0.36 : 0.70;
     const baseY = isPortrait ? -0.88 : -0.74;
-    const bob = Math.sin(t * 1.65) * 0.028;
+    const bob = Math.sin(t * 1.65) * 0.025;
 
     world.position.set(baseX, baseY + bob, 0);
 
     if (modelReady) {
       modelRoot.rotation.set(0, Math.sin(t * 0.65) * 0.05, 0);
-      modelRoot.scale.set(1, 1, 1);
 
       if (performance.now() < emoteEndAt) {
         if (activeEmote === "Celebración") {
-          world.position.y = baseY + Math.abs(Math.sin(t * 3.8)) * 0.12;
-          modelRoot.rotation.z = Math.sin(t * 3.6) * 0.04;
+          world.position.y = baseY + Math.abs(Math.sin(t * 3.8)) * 0.10;
         } else if (activeEmote === "Sonrisa") {
           modelRoot.rotation.y = Math.sin(t * 2.3) * 0.12;
         } else if (activeEmote === "Energía") {
@@ -353,9 +322,14 @@ if (!canvas || !stage) {
         } else if (activeEmote === "Corazón") {
           modelRoot.rotation.y = Math.sin(t * 2.0) * 0.12;
           modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
+        } else {
+          modelRoot.scale.set(1, 1, 1);
+          modelRoot.rotation.z = 0;
         }
       } else {
         activeEmote = "";
+        modelRoot.scale.set(1, 1, 1);
+        modelRoot.rotation.z = 0;
       }
     }
 

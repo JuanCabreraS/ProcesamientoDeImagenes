@@ -435,8 +435,6 @@ function setupPhotoPage() {
   const switchBtn = document.getElementById("switchCamBtn");
   const statusEl = document.getElementById("photoStatus");
   const backBtn = document.getElementById("backBtn");
-  const effectsBtn = document.getElementById("effectsBtn");
-  const effectsLabel = document.getElementById("effectsLabel");
   const emoteButtons = Array.from(document.querySelectorAll(".emote-btn"));
   const emotePill = document.getElementById("emotePill");
   const emotePillIcon = emotePill?.querySelector(".emote-pill__icon");
@@ -448,34 +446,16 @@ function setupPhotoPage() {
   if (!video || !stage || !outCanvas) return;
 
   let currentFacing = "user";
-  let currentFilterIndex = 0;
   let activeEmote = null;
 
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
   };
 
-  const syncFacingUI = () => {
-    stage.classList.toggle("is-selfie", currentFacing === "user");
-  };
-
   const stop = () => {
     window.CameraUtils.stopCamera(video);
     setStatus("Cámara detenida");
   };
-
-  function applyFilter(index) {
-    currentFilterIndex = (index + PHOTO_FILTERS.length) % PHOTO_FILTERS.length;
-    const preset = PHOTO_FILTERS[currentFilterIndex];
-
-    video.style.filter = preset.canvasFilter;
-    if (overlayCanvas) overlayCanvas.style.filter = preset.canvasFilter;
-
-    document.body.dataset.filterIndex = String(currentFilterIndex);
-    if (effectsLabel) effectsLabel.textContent = `Filtro: ${preset.label}`;
-    effectsBtn?.classList.toggle("is-active", currentFilterIndex > 0);
-    effectsBtn?.setAttribute("aria-pressed", String(currentFilterIndex > 0));
-  }
 
   function clearEmoteUI() {
     emoteButtons.forEach((button) => {
@@ -539,7 +519,6 @@ function setupPhotoPage() {
       });
 
       currentFacing = video.dataset.facing || facingMode;
-      syncFacingUI();
       setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
@@ -547,12 +526,7 @@ function setupPhotoPage() {
     }
   }
 
-  applyFilter(0);
   startPreview("user");
-
-  effectsBtn?.addEventListener("click", () => {
-    applyFilter(currentFilterIndex + 1);
-  });
 
   emoteButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -566,7 +540,6 @@ function setupPhotoPage() {
       setStatus("Cambiando cámara...");
       await window.CameraUtils.switchCamera(video);
       currentFacing = video.dataset.facing || (currentFacing === "user" ? "environment" : "user");
-      syncFacingUI();
       setStatus("Cámara cambiada");
     } catch (error) {
       console.error(error);
@@ -580,11 +553,9 @@ function setupPhotoPage() {
       return;
     }
 
-    const filter = PHOTO_FILTERS[currentFilterIndex]?.canvasFilter || "none";
-
     const dataUrl = takeCompositePhoto(video, outCanvas, stage, overlayCanvas, {
       mirror: currentFacing === "user",
-      filter,
+      filter: "none",
       emote: activeEmote
     });
 
