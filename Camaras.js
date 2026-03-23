@@ -94,7 +94,6 @@ function setupMarkerLandingPage(markerScene) {
   const bgVideo = document.getElementById("markerBgVideo");
 
   let unlocked = false;
-  let previewBound = false;
   let previewRetryTimer = null;
 
   const setStatus = (text) => {
@@ -143,38 +142,27 @@ function setupMarkerLandingPage(markerScene) {
     const srcVideo = arSystem && arSystem.video;
     if (!srcVideo) return false;
 
-    const syncStream = () => {
-      const stream = srcVideo.srcObject;
-      if (!stream) return false;
+    const stream = srcVideo.srcObject;
+    if (!stream) return false;
 
-      if (bgVideo.srcObject !== stream) {
-        bgVideo.srcObject = stream;
-      }
+    if (bgVideo.srcObject !== stream) {
+      bgVideo.srcObject = stream;
+    }
 
-      bgVideo.muted = true;
-      bgVideo.defaultMuted = true;
-      bgVideo.setAttribute("muted", "");
-      bgVideo.setAttribute("autoplay", "");
-      bgVideo.setAttribute("playsinline", "");
-      bgVideo.playsInline = true;
+    bgVideo.muted = true;
+    bgVideo.defaultMuted = true;
+    bgVideo.setAttribute("muted", "");
+    bgVideo.setAttribute("autoplay", "");
+    bgVideo.setAttribute("playsinline", "");
+    bgVideo.playsInline = true;
 
-      const playPromise = bgVideo.play();
-      if (playPromise?.catch) {
-        playPromise.catch(() => {});
-      }
+    const playPromise = bgVideo.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {});
+    }
 
-      frame?.classList.add("is-live");
-      previewBound = true;
-      return true;
-    };
-
-    if (syncStream()) return true;
-
-    srcVideo.addEventListener("loadedmetadata", syncStream);
-    srcVideo.addEventListener("canplay", syncStream);
-    srcVideo.addEventListener("playing", syncStream);
-
-    return false;
+    frame?.classList.add("is-live");
+    return true;
   };
 
   const schedulePreviewAttach = (attempt = 0) => {
@@ -183,17 +171,11 @@ function setupMarkerLandingPage(markerScene) {
     clearTimeout(previewRetryTimer);
     previewRetryTimer = setTimeout(() => {
       prepareSceneVisuals();
-
-      if (!bgVideo?.srcObject || bgVideo.readyState < 2) {
-        previewBound = false;
-      }
-
       schedulePreviewAttach(attempt + 1);
     }, attempt < 30 ? 180 : 500);
   };
 
   const forcePreviewRecovery = () => {
-    previewBound = false;
     prepareSceneVisuals();
     schedulePreviewAttach();
   };
@@ -226,12 +208,12 @@ function setupMarkerLandingPage(markerScene) {
       setStatus("AR listo. Apunta al marcador para desbloquear al jugador.");
     }
 
-    // Reintentos extra en móvil
     setTimeout(forcePreviewRecovery, 800);
     setTimeout(forcePreviewRecovery, 1800);
   });
 
-  markerScene.addEventListener("arError", () => {
+  markerScene.addEventListener("arError", (event) => {
+    console.error("MindAR arError:", event);
     setStatus("No se pudo iniciar AR. Verifica permisos de cámara y HTTPS.");
   });
 
@@ -303,7 +285,9 @@ function setupTriviaPage() {
   });
 
   confirmBtn.addEventListener("click", () => {
-    window.location.href = encodeURI("Pantalla Jugador.html");
+    window.location.href = encodeURI("Pantalla Trivia.html").includes("Pantalla Trivia.html")
+      ? (window.location.href = encodeURI("Pantalla Jugador.html"))
+      : null;
   });
 
   updateConfirm();
