@@ -29,7 +29,10 @@ if (!canvas || !stage) {
 
   const scene = new THREE.Scene();
 
+  // Cámara más cercana y con mejor encuadre para móvil
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
+  camera.position.set(0.2, 1.2, 4.6);
+  camera.lookAt(0.2, 0.95, 0);
   scene.add(camera);
 
   // Luces
@@ -102,7 +105,9 @@ if (!canvas || !stage) {
   let modelReady = false;
   let model = null;
 
-  const restPose = new THREE.Vector3(0.42, 0, 0);
+  // Pose base más visible
+  const restPose = new THREE.Vector3(0.35, -0.9, 0);
+  let isPortrait = true;
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -113,14 +118,14 @@ if (!canvas || !stage) {
     renderer.setSize(rect.width, rect.height, false);
 
     camera.aspect = rect.width / rect.height;
+    isPortrait = rect.height >= rect.width;
 
-    const portrait = rect.height >= rect.width;
-
-    restPose.set(portrait ? 0.38 : 0.72, 0, 0);
+    // Mucho más centrado y visible
+    restPose.set(isPortrait ? 0.35 : 0.65, isPortrait ? -0.9 : -0.75, 0);
     world.position.copy(restPose);
 
-    camera.position.set(restPose.x, 1.25, portrait ? 4.7 : 5.0);
-    camera.lookAt(restPose.x - 0.04, 0.92, 0);
+    camera.position.set(restPose.x, 1.2, isPortrait ? 4.6 : 4.9);
+    camera.lookAt(restPose.x, 0.95, 0);
     camera.updateProjectionMatrix();
 
     return true;
@@ -134,6 +139,7 @@ if (!canvas || !stage) {
     let box = new THREE.Box3().setFromObject(object3D);
     const center = box.getCenter(new THREE.Vector3());
 
+    // Centrar modelo en X/Z y apoyar los pies
     object3D.position.x -= center.x;
     object3D.position.z -= center.z;
     object3D.position.y -= box.min.y;
@@ -141,7 +147,8 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 1.82;
+    // Escala menos agresiva
+    const targetHeight = 1.8;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
@@ -281,6 +288,8 @@ if (!canvas || !stage) {
 
       modelReady = true;
       setStatus("Jugador listo");
+      console.log("GLB cargado", gltf);
+      console.log("Animaciones:", (gltf.animations || []).map((a) => a.name));
     },
     undefined,
     (error) => {
@@ -307,29 +316,33 @@ if (!canvas || !stage) {
       mixer.update(dt);
     }
 
-    const bob = Math.sin(t * 1.6) * 0.035;
-    world.position.set(restPose.x, restPose.y + bob, restPose.z);
+    // Bobbing estable con base fija
+    const baseX = isPortrait ? 0.35 : 0.65;
+    const baseY = isPortrait ? -0.9 : -0.75;
+    const bob = Math.sin(t * 1.65) * 0.03;
+
+    world.position.set(baseX, baseY + bob, 0);
 
     if (modelReady) {
-      modelRoot.rotation.y = Math.sin(t * 0.65) * 0.05;
+      // Reset base por frame para evitar acumulaciones raras
+      modelRoot.rotation.set(0, Math.sin(t * 0.65) * 0.05, 0);
+      modelRoot.scale.set(1, 1, 1);
 
       if (performance.now() < emoteEndAt) {
         if (activeEmote === "Celebración") {
-          world.position.y = restPose.y + Math.abs(Math.sin(t * 3.8)) * 0.16;
+          world.position.y = baseY + Math.abs(Math.sin(t * 3.8)) * 0.12;
           modelRoot.rotation.z = Math.sin(t * 3.6) * 0.04;
         } else if (activeEmote === "Sonrisa") {
-          modelRoot.rotation.y += Math.sin(t * 2.3) * 0.10;
+          modelRoot.rotation.y = Math.sin(t * 2.3) * 0.12;
         } else if (activeEmote === "Energía") {
           const pulse = 1 + Math.sin(t * 7.2) * 0.035;
           modelRoot.scale.setScalar(pulse);
         } else if (activeEmote === "Corazón") {
-          modelRoot.rotation.y += Math.sin(t * 2.0) * 0.12;
+          modelRoot.rotation.y = Math.sin(t * 2.0) * 0.12;
           modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
         }
       } else {
         activeEmote = "";
-        modelRoot.scale.set(1, 1, 1);
-        modelRoot.rotation.z = 0;
       }
     }
 
@@ -357,7 +370,7 @@ if (!canvas || !stage) {
       activeEmote = "";
       emoteEndAt = 0;
       modelRoot.scale.set(1, 1, 1);
-      modelRoot.rotation.z = 0;
+      modelRoot.rotation.set(0, 0, 0);
 
       if (defaultAction) {
         playAction(defaultAction, false);
