@@ -1,7 +1,7 @@
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
-const MODEL_URL = "./Futbolista.glb";
+const MODEL_URL = new URL("./Futbolista.glb", import.meta.url).href;
 
 const canvas = document.getElementById("arCanvas");
 const stage = document.querySelector(".ar-stage");
@@ -18,7 +18,8 @@ if (!canvas || !stage) {
     canvas,
     alpha: true,
     antialias: true,
-    preserveDrawingBuffer: true
+    preserveDrawingBuffer: true,
+    powerPreference: "high-performance"
   });
 
   renderer.setClearColor(0x000000, 0);
@@ -28,33 +29,33 @@ if (!canvas || !stage) {
 
   const scene = new THREE.Scene();
 
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
-  camera.position.set(0, 1.6, 8.6);
-  camera.lookAt(0, 1.5, 0);
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
+  scene.add(camera);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.55));
+  // Luces
+  scene.add(new THREE.AmbientLight(0xffffff, 1.15));
 
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x52607a, 1.15);
-  hemi.position.set(0, 8, 0);
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
+  hemi.position.set(0, 5, 0);
   scene.add(hemi);
 
-  const key = new THREE.DirectionalLight(0xffffff, 1.4);
-  key.position.set(3.6, 7.2, 4.8);
+  const key = new THREE.DirectionalLight(0xffffff, 1.45);
+  key.position.set(3, 5, 4);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
   key.shadow.camera.near = 0.5;
-  key.shadow.camera.far = 25;
+  key.shadow.camera.far = 20;
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xd8ebff, 0.45);
-  fill.position.set(-4, 3.5, 4);
+  const fill = new THREE.DirectionalLight(0xdce8ff, 0.45);
+  fill.position.set(-3, 2.5, 3);
   scene.add(fill);
 
-  const anchor = new THREE.Group();
-  scene.add(anchor);
+  const world = new THREE.Group();
+  scene.add(world);
 
   const modelRoot = new THREE.Group();
-  anchor.add(modelRoot);
+  world.add(modelRoot);
 
   function createShadowTexture() {
     const size = 256;
@@ -63,40 +64,45 @@ if (!canvas || !stage) {
     c.height = size;
 
     const ctx = c.getContext("2d");
-    const g = ctx.createRadialGradient(size / 2, size / 2, 20, size / 2, size / 2, size / 2);
-    g.addColorStop(0, "rgba(0,0,0,0.42)");
-    g.addColorStop(0.55, "rgba(0,0,0,0.20)");
+    const g = ctx.createRadialGradient(size / 2, size / 2, 18, size / 2, size / 2, size / 2);
+    g.addColorStop(0, "rgba(0,0,0,0.34)");
+    g.addColorStop(0.55, "rgba(0,0,0,0.16)");
     g.addColorStop(1, "rgba(0,0,0,0)");
 
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
 
-    const texture = new THREE.CanvasTexture(c);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    return texture;
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
   }
 
   const shadowPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.4, 1.55),
+    new THREE.PlaneGeometry(2.6, 1.2),
     new THREE.MeshBasicMaterial({
       map: createShadowTexture(),
       transparent: true,
       depthWrite: false,
-      opacity: 0.9
+      opacity: 0.95
     })
   );
   shadowPlane.rotation.x = -Math.PI / 2;
-  shadowPlane.position.y = 0.02;
-  shadowPlane.renderOrder = 0;
-  anchor.add(shadowPlane);
+  shadowPlane.position.set(0, 0.015, 0);
+  world.add(shadowPlane);
+
+  const loader = new GLTFLoader();
+  const clock = new THREE.Clock();
 
   let mixer = null;
   let actions = [];
+  let defaultAction = null;
   let activeAction = null;
   let activeEmote = "";
   let emoteEndAt = 0;
   let modelReady = false;
-  const clock = new THREE.Clock();
+  let model = null;
+
+  const restPose = new THREE.Vector3(0.42, 0, 0);
 
   function resizeTo() {
     const rect = stage.getBoundingClientRect();
@@ -107,119 +113,176 @@ if (!canvas || !stage) {
     renderer.setSize(rect.width, rect.height, false);
 
     camera.aspect = rect.width / rect.height;
-    camera.updateProjectionMatrix();
 
     const portrait = rect.height >= rect.width;
-    anchor.position.set(portrait ? 1.35 : 1.8, portrait ? -2.2 : -1.95, 0);
-    shadowPlane.scale.setScalar(portrait ? 1 : 1.15);
+
+    restPose.set(portrait ? 0.38 : 0.72, 0, 0);
+    world.position.copy(restPose);
+
+    camera.position.set(restPose.x, 1.25, portrait ? 4.7 : 5.0);
+    camera.lookAt(restPose.x - 0.04, 0.92, 0);
+    camera.updateProjectionMatrix();
 
     return true;
   }
 
-  function stopAllActions() {
-    actions.forEach((action) => {
-      action.stop();
-      action.enabled = false;
-    });
-    activeAction = null;
+  function fitModelToView(object3D) {
+    object3D.position.set(0, 0, 0);
+    object3D.rotation.set(0, 0, 0);
+    object3D.scale.setScalar(1);
+
+    let box = new THREE.Box3().setFromObject(object3D);
+    const center = box.getCenter(new THREE.Vector3());
+
+    object3D.position.x -= center.x;
+    object3D.position.z -= center.z;
+    object3D.position.y -= box.min.y;
+
+    box = new THREE.Box3().setFromObject(object3D);
+    const size = box.getSize(new THREE.Vector3());
+
+    const targetHeight = 1.82;
+    const scale = targetHeight / Math.max(size.y, 0.001);
+    object3D.scale.setScalar(scale);
+
+    box = new THREE.Box3().setFromObject(object3D);
+    const center2 = box.getCenter(new THREE.Vector3());
+
+    object3D.position.x -= center2.x;
+    object3D.position.z -= center2.z;
+    object3D.position.y -= box.min.y;
+
+    box = new THREE.Box3().setFromObject(object3D);
+    const finalSize = box.getSize(new THREE.Vector3());
+
+    shadowPlane.scale.set(
+      Math.max(1.1, finalSize.x * 1.12),
+      Math.max(1.0, finalSize.z * 3.0),
+      1
+    );
   }
 
-  function findActionByHint(hints) {
-    const lowered = hints.map((hint) => hint.toLowerCase());
-    return actions.find((action) => {
-      const name = (action.getClip().name || "").toLowerCase();
-      return lowered.some((hint) => name.includes(hint));
-    }) || null;
+  function buildActions(clips, root) {
+    if (!clips?.length) return;
+
+    mixer = new THREE.AnimationMixer(root);
+    actions = clips.map((clip) => ({
+      name: (clip.name || "").toLowerCase(),
+      action: mixer.clipAction(clip)
+    }));
+
+    const idle =
+      actions.find((a) => a.name.includes("idle")) ||
+      actions.find((a) => a.name.includes("pose")) ||
+      actions[0] ||
+      null;
+
+    defaultAction = idle?.action || null;
+
+    if (defaultAction) {
+      defaultAction.reset();
+      defaultAction.enabled = true;
+      defaultAction.setLoop(THREE.LoopRepeat, Infinity);
+      defaultAction.fadeIn(0.2);
+      defaultAction.play();
+      activeAction = defaultAction;
+    }
   }
 
-  function playClipForEmote(label) {
-    if (!mixer || actions.length === 0) return false;
+  function playAction(nextAction, once = false) {
+    if (!nextAction) return;
 
-    let action = null;
-
-    if (label === "Celebración") {
-      action = findActionByHint(["cele", "vict", "goal", "dance", "win"]);
-    } else if (label === "Sonrisa") {
-      action = findActionByHint(["idle", "pose", "breath"]);
-    } else if (label === "Energía") {
-      action = findActionByHint(["run", "power", "jump", "kick"]);
-    } else if (label === "Corazón") {
-      action = findActionByHint(["pose", "idle"]);
-    }
-
-    if (!action) {
-      action = actions[0] || null;
-    }
-
-    if (!action) return false;
-
-    if (activeAction && activeAction !== action) {
+    if (activeAction && activeAction !== nextAction) {
       activeAction.fadeOut(0.18);
     }
 
-    action.reset();
-    action.enabled = true;
-    action.fadeIn(0.18);
-    action.play();
-    activeAction = action;
-    return true;
+    nextAction.reset();
+    nextAction.enabled = true;
+    nextAction.setEffectiveTimeScale(1);
+    nextAction.setEffectiveWeight(1);
+
+    if (once) {
+      nextAction.setLoop(THREE.LoopOnce, 1);
+      nextAction.clampWhenFinished = true;
+    } else {
+      nextAction.setLoop(THREE.LoopRepeat, Infinity);
+      nextAction.clampWhenFinished = false;
+    }
+
+    nextAction.fadeIn(0.18);
+    nextAction.play();
+    activeAction = nextAction;
   }
 
-  const loader = new GLTFLoader();
+  function findActionByLabel(label) {
+    const key = (label || "").toLowerCase();
+
+    let found = actions.find((a) => a.name.includes(key));
+
+    if (!found && key.includes("cele")) {
+      found = actions.find((a) =>
+        a.name.includes("cele") ||
+        a.name.includes("vict") ||
+        a.name.includes("goal") ||
+        a.name.includes("dance") ||
+        a.name.includes("win")
+      );
+    }
+
+    if (!found && key.includes("sonr")) {
+      found = actions.find((a) =>
+        a.name.includes("idle") ||
+        a.name.includes("pose") ||
+        a.name.includes("breath")
+      );
+    }
+
+    if (!found && key.includes("energ")) {
+      found = actions.find((a) =>
+        a.name.includes("run") ||
+        a.name.includes("jump") ||
+        a.name.includes("kick") ||
+        a.name.includes("power")
+      );
+    }
+
+    if (!found && key.includes("cor")) {
+      found = actions.find((a) =>
+        a.name.includes("pose") ||
+        a.name.includes("idle")
+      );
+    }
+
+    return found?.action || defaultAction || null;
+  }
+
   setStatus("Cargando jugador…");
 
   loader.load(
     MODEL_URL,
     (gltf) => {
-      const model = gltf.scene;
-      modelRoot.add(model);
+      model = gltf.scene;
 
       model.traverse((node) => {
         if (node.isMesh) {
           node.castShadow = true;
           node.receiveShadow = true;
+          node.frustumCulled = false;
 
           if (node.material) {
-            node.material.depthWrite = true;
+            node.material.needsUpdate = true;
           }
         }
       });
 
-      const box = new THREE.Box3().setFromObject(model);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-
-      model.position.x -= center.x;
-      model.position.z -= center.z;
-      model.position.y -= box.min.y;
-
-      const fittedBox = new THREE.Box3().setFromObject(model);
-      const fittedSize = fittedBox.getSize(new THREE.Vector3());
-      const currentHeight = Math.max(fittedSize.y, 0.001);
-      const targetHeight = 4.2;
-      const scale = targetHeight / currentHeight;
-      model.scale.setScalar(scale);
-
-      const scaledBox = new THREE.Box3().setFromObject(model);
-      const scaledSize = scaledBox.getSize(new THREE.Vector3());
-
-      shadowPlane.scale.set(scaledSize.x * 0.50, Math.max(1, scaledSize.z * 0.52), 1);
-
-      mixer = gltf.animations?.length ? new THREE.AnimationMixer(model) : null;
-      actions = mixer ? gltf.animations.map((clip) => mixer.clipAction(clip)) : [];
-      playClipForEmote("Sonrisa");
+      modelRoot.add(model);
+      fitModelToView(model);
+      buildActions(gltf.animations || [], model);
 
       modelReady = true;
       setStatus("Jugador listo");
-      setTimeout(() => {
-        if (statusEl && statusEl.textContent === "Jugador listo") {
-          statusEl.textContent = "Listo para la foto";
-        }
-      }, 1200);
     },
-    () => {
-      setStatus("Cargando jugador…");
-    },
+    undefined,
     (error) => {
       console.error("Error cargando Futbolista.glb", error);
       setStatus("No se pudo cargar el jugador");
@@ -231,6 +294,7 @@ if (!canvas || !stage) {
   } else {
     window.addEventListener("resize", resizeTo);
   }
+
   resizeTo();
 
   function animate() {
@@ -243,35 +307,29 @@ if (!canvas || !stage) {
       mixer.update(dt);
     }
 
+    const bob = Math.sin(t * 1.6) * 0.035;
+    world.position.set(restPose.x, restPose.y + bob, restPose.z);
+
     if (modelReady) {
-      const baseX = anchor.position.x;
-      const baseY = anchor.position.y;
-      const bob = Math.sin(t * 1.65) * 0.06;
-
-      anchor.position.x = baseX;
-      anchor.position.y = baseY + bob;
-
-      modelRoot.rotation.set(0, Math.sin(t * 0.45) * 0.08, 0);
-      modelRoot.position.set(0, 0, 0);
-      modelRoot.scale.set(1, 1, 1);
+      modelRoot.rotation.y = Math.sin(t * 0.65) * 0.05;
 
       if (performance.now() < emoteEndAt) {
         if (activeEmote === "Celebración") {
-          anchor.position.y = baseY + Math.abs(Math.sin(t * 4.0)) * 0.34;
-          modelRoot.rotation.z = Math.sin(t * 4.0) * 0.08;
-          modelRoot.rotation.y += Math.sin(t * 3.0) * 0.22;
+          world.position.y = restPose.y + Math.abs(Math.sin(t * 3.8)) * 0.16;
+          modelRoot.rotation.z = Math.sin(t * 3.6) * 0.04;
         } else if (activeEmote === "Sonrisa") {
-          modelRoot.rotation.y += Math.sin(t * 2.4) * 0.18;
+          modelRoot.rotation.y += Math.sin(t * 2.3) * 0.10;
         } else if (activeEmote === "Energía") {
-          const pulse = 1 + Math.sin(t * 7.5) * 0.05;
+          const pulse = 1 + Math.sin(t * 7.2) * 0.035;
           modelRoot.scale.setScalar(pulse);
-          modelRoot.rotation.y += Math.sin(t * 5.0) * 0.16;
         } else if (activeEmote === "Corazón") {
-          modelRoot.rotation.y += Math.sin(t * 2.2) * 0.28;
-          modelRoot.rotation.z = Math.sin(t * 2.2) * 0.06;
+          modelRoot.rotation.y += Math.sin(t * 2.0) * 0.12;
+          modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
         }
       } else {
         activeEmote = "";
+        modelRoot.scale.set(1, 1, 1);
+        modelRoot.rotation.z = 0;
       }
     }
 
@@ -289,13 +347,21 @@ if (!canvas || !stage) {
     playEmote(label) {
       activeEmote = label || "";
       emoteEndAt = performance.now() + 1800;
-      playClipForEmote(label || "");
+
+      const action = findActionByLabel(label || "");
+      if (action) {
+        playAction(action, action !== defaultAction);
+      }
     },
     resetEmote() {
       activeEmote = "";
       emoteEndAt = 0;
-      stopAllActions();
-      playClipForEmote("Sonrisa");
+      modelRoot.scale.set(1, 1, 1);
+      modelRoot.rotation.z = 0;
+
+      if (defaultAction) {
+        playAction(defaultAction, false);
+      }
     }
   };
 }
