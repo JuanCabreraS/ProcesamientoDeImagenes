@@ -1294,6 +1294,8 @@ function setupPhotoPage() {
 
       currentFacing = video.dataset.facing || facingMode;
       window.ARPhoto?.setFacingMode?.(currentFacing);
+      const selectedTeamId = sessionStorage.getItem("selectedTeamId") || "mexico";
+      window.ARPhoto?.setTeam?.(selectedTeamId);
       setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
@@ -1302,6 +1304,11 @@ function setupPhotoPage() {
   }
 
   startPreview("enviroment");
+
+  setTimeout(() => {
+    const selectedTeamId = sessionStorage.getItem("selectedTeamId") || "mexico";
+    window.ARPhoto?.setTeam?.(selectedTeamId);
+  }, 500);
 
   emoteButtons.forEach((button) => {
     button.addEventListener("click", () => {

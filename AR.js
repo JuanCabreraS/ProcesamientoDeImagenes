@@ -42,6 +42,83 @@ function applyTeamTextureToModel(object3D, teamId) {
   });
 }
 
+const TEAM_CONFIG = {
+  mexico: {
+    label: "México",
+    texture: new URL("Mexico.png", import.meta.url).href
+  }
+};
+
+const teamTextureCache = new Map();
+
+let modelSceneRef = null;
+let currentTeamId = sessionStorage.getItem("selectedTeamId") || "mexico";
+let pendingTeamId = currentTeamId;
+
+function getMaterialList(material) {
+  return Array.isArray(material) ? material : [material];
+}
+
+function shouldReplaceMaterial(material) {
+  const name = (material?.name || "").toLowerCase();
+  return (
+    name.includes("outfit_top") ||
+    name.includes("outfit_bottom") ||
+    name.includes("outfit_shoes")
+  );
+}
+
+function loadTeamTexture(teamId) {
+  const cfg = TEAM_CONFIG[teamId];
+  if (!cfg?.texture) return null;
+
+  if (teamTextureCache.has(teamId)) {
+    return teamTextureCache.get(teamId);
+  }
+
+  const texture = new THREE.TextureLoader().load(cfg.texture);
+  texture.flipY = false;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+
+  teamTextureCache.set(teamId, texture);
+  return texture;
+}
+
+function applyTeamTextureToModel(object3D, teamId) {
+  if (!object3D) return;
+
+  const texture = loadTeamTexture(teamId);
+  if (!texture) {
+    console.warn("No encontré textura para teamId:", teamId);
+    return;
+  }
+
+  object3D.traverse((node) => {
+    if (!node.isMesh || !node.material) return;
+
+    const materialList = getMaterialList(node.material);
+    const nextMaterials = materialList.map((mat) => {
+      if (!mat) return mat;
+      if (!shouldReplaceMaterial(mat)) return mat;
+
+      const clone = mat.clone();
+      clone.map = texture;
+      clone.needsUpdate = true;
+      return clone;
+    });
+
+    node.material = Array.isArray(node.material) ? nextMaterials : nextMaterials[0];
+  });
+
+  currentTeamId = teamId;
+}
+
+function applyPendingTeamTexture() {
+  if (!modelSceneRef) return;
+  applyTeamTextureToModel(modelSceneRef, pendingTeamId || currentTeamId || "mexico");
+}
+
 const canvas = document.getElementById("arCanvas");
 const stage = document.querySelector(".ar-stage");
 const statusEl = document.getElementById("photoStatus");
@@ -363,6 +440,8 @@ if (!canvas || !stage) {
 
       modelRoot.add(model);
       applyTeamTextureToModel(model, getSelectedTeamId());
+      modelSceneRef = model;
+      applyPendingTeamTexture();
       fitModelToView(model);
       buildActions(gltf.animations || [], model);
 
@@ -437,6 +516,10 @@ if (!canvas || !stage) {
     renderOnce() {
       resizeTo();
       renderer.render(scene, camera);
+    },
+    setTeam(teamId) {
+      pendingTeamId = teamId || "mexico";
+      applyPendingTeamTexture();
     },
     setFacingMode(mode) {
       currentFacing = mode === "user" ? "user" : "environment";
