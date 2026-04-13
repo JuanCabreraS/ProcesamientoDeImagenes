@@ -6,11 +6,364 @@ function setupHomeButtons() {
   });
 }
 
+const TRIVIA_PLAYERS = [
+  {
+    id: "messi",
+    name: "Lionel Messi",
+    shortName: "Messi",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿En qué País nació Lionel Messi?",
+        options: ["Japón", "Rusia", "Argentina", "Francia"],
+        correctIndex: 2
+      },
+      {
+        text: "¿Cuál es el número del jersey de Lionel Messi?",
+        options: ["10", "33", "28", "16"],
+        correctIndex: 0
+      }
+    ]
+  },
+  {
+    id: "dimaria",
+    name: "Ángel Di María",
+    shortName: "Ángel Di María",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "Además de Rosario Central, ¿en cuántos equipos jugó Di María?",
+        options: ["4", "5", "6", "7"],
+        correctIndex: 1
+      },
+      {
+        text: "¿Contra qué equipo debutó Di María en Central?",
+        options: ["Quilmes", "Talleres", "Independiente", "River Plate"],
+        correctIndex: 2
+      }
+    ]
+  },
+  {
+    id: "julian",
+    name: "Julián Álvarez",
+    shortName: "Julián Álvarez",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿Cuándo nació Julián Álvarez?",
+        options: [
+          "29 de enero del 2000",
+          "31 de enero del 2000",
+          "4 de marzo del 1999",
+          "9 de enero del 2000"
+        ],
+        correctIndex: 1
+      },
+      {
+        text: "¿En qué equipo juega actualmente?",
+        options: ["River Plate", "Manchester City", "Boca Junior", "Real Madrid"],
+        correctIndex: 1
+      }
+    ]
+  },
+  {
+    id: "mbappe",
+    name: "Kylian Mbappé",
+    shortName: "Kylian Mbappé",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿Qué posición juega Mbappé?",
+        options: ["Delantero", "Medio campo", "Lateral", "Portero"],
+        correctIndex: 0
+      },
+      {
+        text: "¿Dónde nació Mbappé?",
+        options: ["Yaounde", "Marseille", "Macon", "Paris"],
+        correctIndex: 3
+      }
+    ]
+  },
+  {
+    id: "giroud",
+    name: "Olivier Giroud",
+    shortName: "Olivier Giroud",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿Cuándo inicio su carrera profesional?",
+        options: ["2004", "2005", "2006", "2007"],
+        correctIndex: 1
+      },
+      {
+        text: "¿Cuánto mide Olivier Giroud?",
+        options: ["1.90 m", "1.92 m", "1.94 m", "1.96 m"],
+        correctIndex: 1
+      }
+    ]
+  },
+  {
+    id: "neymar",
+    name: "Neymar JR",
+    shortName: "Neymar JR",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿En qué club brasileño comenzó Neymar su carrera profesional?",
+        options: ["Flamengo", "Santos", "Fluminense", "Palmeiras"],
+        correctIndex: 1
+      },
+      {
+        text: "¿Cuántos goles ha marcado en Champions Neymar hasta la fecha?",
+        options: ["23", "33", "43", "53"],
+        correctIndex: 2
+      }
+    ]
+  },
+  {
+    id: "vinicius",
+    name: "Vinicius JR",
+    shortName: "Vinicius JR",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿Cuántos años tiene?",
+        options: ["22", "25", "24", "28"],
+        correctIndex: 2
+      },
+      {
+        text: "¿En qué equipo inicio su carrera?",
+        options: ["Vasco", "Sao Paulo", "Flamengo", "Real Madrid"],
+        correctIndex: 2
+      }
+    ]
+  },
+  {
+    id: "amrabat",
+    name: "Sofyan Amrabat",
+    shortName: "Sofyan Amrabat",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿En qué posición juega Amrabat?",
+        options: ["Centrocampista", "Portero", "Delantero", "Lateral"],
+        correctIndex: 1
+      },
+      {
+        text: "¿Con que club inglés gano la FA Cup en 2023/2024?",
+        options: ["Liver", "Sunderland", "Manchester United", "Manchester City"],
+        correctIndex: 2
+      }
+    ]
+  },
+  {
+    id: "hakimi",
+    name: "Achraf Hakimi",
+    shortName: "Achraf Hakimi",
+    meta: "Jugador desbloqueado",
+    questions: [
+      {
+        text: "¿Dónde nació Achraf Hakimi?",
+        options: ["Marruecos", "Emiratos Árabes Unidos", "España", "Portugal"],
+        correctIndex: 2
+      },
+      {
+        text: "¿Con que club jugó antes de unirse al PSG?",
+        options: ["Inter de Milán", "Wydad", "Raja Casablanca", "RSB Berkane"],
+        correctIndex: 0
+      }
+    ]
+  }
+];
+
+const PLAYER_PROFILES = {
+  messi: {
+    jersey: 10,
+    meta: "Argentina • Delantero",
+    rating: 95,
+    stats: {
+      goals: 820,
+      assists: 360,
+      matches: 1050,
+      trophies: 44
+    },
+    facts: [
+      "Ganó la Copa del Mundo con Argentina en 2022.",
+      "Debutó profesionalmente con el FC Barcelona.",
+      "Es reconocido por su visión, regate y definición."
+    ]
+  },
+
+  dimaria: {
+    jersey: 11,
+    meta: "Argentina • Extremo derecho",
+    rating: 87,
+    stats: {
+      goals: 180,
+      assists: 260,
+      matches: 720,
+      trophies: 31
+    },
+    facts: [
+      "Fue campeón olímpico con Argentina en 2008.",
+      "Marcó goles importantes en finales con su selección.",
+      "Jugó en clubes como Benfica, Real Madrid, PSG y Juventus."
+    ]
+  },
+
+  julian: {
+    jersey: 9,
+    meta: "Argentina • Delantero",
+    rating: 86,
+    stats: {
+      goals: 140,
+      assists: 55,
+      matches: 260,
+      trophies: 12
+    },
+    facts: [
+      "Su apodo es 'La Araña'.",
+      "Se formó y brilló con River Plate.",
+      "Fue campeón del mundo con Argentina siendo muy joven."
+    ]
+  },
+
+  mbappe: {
+    jersey: 7,
+    meta: "Francia • Delantero",
+    rating: 92,
+    stats: {
+      goals: 320,
+      assists: 140,
+      matches: 430,
+      trophies: 18
+    },
+    facts: [
+      "Fue campeón del mundo con Francia en 2018.",
+      "Destaca por su gran velocidad y definición.",
+      "Debutó profesionalmente con el AS Monaco."
+    ]
+  },
+
+  giroud: {
+    jersey: 9,
+    meta: "Francia • Delantero",
+    rating: 84,
+    stats: {
+      goals: 280,
+      assists: 95,
+      matches: 690,
+      trophies: 14
+    },
+    facts: [
+      "Es un delantero conocido por su juego aéreo.",
+      "Ha jugado en ligas como la francesa, inglesa e italiana.",
+      "Destaca por su remate de cabeza y juego de espaldas."
+    ]
+  },
+
+  neymar: {
+    jersey: 10,
+    meta: "Brasil • Delantero",
+    rating: 91,
+    stats: {
+      goals: 440,
+      assists: 220,
+      matches: 710,
+      trophies: 28
+    },
+    facts: [
+      "Comenzó su carrera profesional en Santos.",
+      "Ganó el oro olímpico con Brasil en 2016.",
+      "Es famoso por su regate, creatividad y técnica."
+    ]
+  },
+
+  vinicius: {
+    jersey: 7,
+    meta: "Brasil • Extremo",
+    rating: 89,
+    stats: {
+      goals: 110,
+      assists: 75,
+      matches: 320,
+      trophies: 10
+    },
+    facts: [
+      "Inició su carrera en Flamengo.",
+      "Es uno de los jugadores más explosivos por banda.",
+      "Destaca por su velocidad y desborde."
+    ]
+  },
+
+  amrabat: {
+    jersey: 4,
+    meta: "Marruecos • Mediocampista",
+    rating: 82,
+    stats: {
+      goals: 12,
+      assists: 18,
+      matches: 310,
+      trophies: 3
+    },
+    facts: [
+      "Juega como mediocampista de recuperación.",
+      "Destacó mucho con Marruecos en el Mundial 2022.",
+      "Es conocido por su intensidad y fortaleza física."
+    ]
+  },
+
+  hakimi: {
+    jersey: 2,
+    meta: "Marruecos • Lateral derecho",
+    rating: 86,
+    stats: {
+      goals: 45,
+      assists: 70,
+      matches: 390,
+      trophies: 12
+    },
+    facts: [
+      "Se desempeña como lateral o carrilero derecho.",
+      "Es reconocido por su velocidad en ataque.",
+      "Antes de consolidarse en Europa pasó por la cantera del Real Madrid."
+    ]
+  }
+};
+
+function saveSelectedTriviaPlayer(player) {
+  sessionStorage.setItem("selectedTriviaPlayer", JSON.stringify(player));
+}
+
+function readSelectedTriviaPlayer() {
+  const raw = sessionStorage.getItem("selectedTriviaPlayer");
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error("No se pudo leer selectedTriviaPlayer:", error);
+    return null;
+  }
+}
+
+function pickRandomTriviaPlayer() {
+  const randomIndex = Math.floor(Math.random() * TRIVIA_PLAYERS.length);
+  const player = JSON.parse(JSON.stringify(TRIVIA_PLAYERS[randomIndex]));
+  saveSelectedTriviaPlayer(player);
+  return player;
+}
+
+function clearTriviaResult() {
+  sessionStorage.removeItem("triviaResult");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setupHomeButtons();
   setupLandingPage();
   setupTriviaPage();
   setupPlayerPage();
+  setupVideoGalleryPage();
   setupPhotoPage();
   setupCapturedPage();
 });
@@ -238,6 +591,9 @@ function setupMarkerLandingPage(markerScene) {
       return;
     }
 
+    pickRandomTriviaPlayer();
+    clearTriviaResult();
+
     window.location.href = encodeURI("Pantalla Trivia.html");
   });
 
@@ -260,45 +616,272 @@ function setupMarkerLandingPage(markerScene) {
 function setupTriviaPage() {
   const confirmBtn = document.querySelector(".confirm");
   const answers = Array.from(document.querySelectorAll(".answer"));
-  if (!confirmBtn || answers.length === 0) return;
+  const scoreNumber = document.querySelector(".score-number");
+  const playerName = document.querySelector(".player__name");
+  const playerCountry = document.querySelector(".player__country");
+  const questionMeta = document.querySelector(".card__meta");
+  const questionText = document.querySelector(".card__question");
+  const dots = Array.from(document.querySelectorAll(".dot"));
 
-  let selected = null;
-
-  function updateConfirm() {
-    confirmBtn.disabled = !selected;
+  if (
+    !confirmBtn ||
+    answers.length === 0 ||
+    !scoreNumber ||
+    !playerName ||
+    !playerCountry ||
+    !questionMeta ||
+    !questionText
+  ) {
+    return;
   }
 
-  answers.forEach((btn) => {
+  const currentPlayer = readSelectedTriviaPlayer() || pickRandomTriviaPlayer();
+  const questions = currentPlayer.questions || [];
+
+  let currentQuestionIndex = 0;
+  let selectedAnswerIndex = null;
+  let correctAnswers = 0;
+  let locked = false;
+
+  function updateDots() {
+    dots.forEach((dot, index) => {
+      dot.classList.toggle("dot--active", index === currentQuestionIndex);
+    });
+  }
+
+  function clearAnswerStates() {
+    answers.forEach((btn) => {
+      btn.classList.remove("is-selected", "is-correct", "is-wrong", "is-disabled");
+      btn.disabled = false;
+    });
+  }
+
+  function renderQuestion() {
+    const question = questions[currentQuestionIndex];
+    if (!question) return;
+
+    selectedAnswerIndex = null;
+    locked = false;
+
+    scoreNumber.textContent = String(currentQuestionIndex + 1);
+    playerName.textContent = currentPlayer.shortName || currentPlayer.name;
+    playerCountry.textContent = currentPlayer.meta || "Jugador desbloqueado";
+    questionMeta.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+    questionText.textContent = question.text;
+
+    answers.forEach((btn, index) => {
+      btn.textContent = question.options[index] || "";
+      btn.disabled = !question.options[index];
+    });
+
+    clearAnswerStates();
+    confirmBtn.disabled = true;
+    updateDots();
+  }
+
+  function finishTrivia() {
+    const result = {
+      playerId: currentPlayer.id,
+      playerName: currentPlayer.name,
+      hits: correctAnswers,
+      total: questions.length
+    };
+
+    sessionStorage.setItem("triviaResult", JSON.stringify(result));
+
+    if (correctAnswers >= 1) {
+      window.location.href = encodeURI("Pantalla Jugador.html");
+    } else {
+      window.location.href = encodeURI("index.html");
+    }
+  }
+
+  answers.forEach((btn, index) => {
     btn.addEventListener("click", () => {
-      if (selected === btn) {
-        btn.classList.remove("is-selected");
-        selected = null;
-        updateConfirm();
-        return;
-      }
+      if (locked) return;
 
       answers.forEach((button) => button.classList.remove("is-selected"));
       btn.classList.add("is-selected");
-      selected = btn;
-      updateConfirm();
+      selectedAnswerIndex = index;
+      confirmBtn.disabled = false;
     });
   });
 
   confirmBtn.addEventListener("click", () => {
-  window.location.href = encodeURI("Pantalla Jugador.html");
+    if (locked || selectedAnswerIndex === null) return;
+
+    const currentQuestion = questions[currentQuestionIndex];
+    if (!currentQuestion) return;
+
+    locked = true;
+    confirmBtn.disabled = true;
+
+    answers.forEach((btn) => {
+      btn.classList.add("is-disabled");
+      btn.disabled = true;
+    });
+
+    const correctIndex = currentQuestion.correctIndex;
+    const isCorrect = selectedAnswerIndex === correctIndex;
+
+    if (isCorrect) {
+      correctAnswers += 1;
+      answers[selectedAnswerIndex].classList.remove("is-selected");
+      answers[selectedAnswerIndex].classList.add("is-correct");
+    } else {
+      answers[selectedAnswerIndex].classList.remove("is-selected");
+      answers[selectedAnswerIndex].classList.add("is-wrong");
+
+      if (answers[correctIndex]) {
+        answers[correctIndex].classList.add("is-correct");
+      }
+    }
+
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex += 1;
+        renderQuestion();
+      } else {
+        finishTrivia();
+      }
+    }, 1000);
   });
-    updateConfirm();
-  }
+
+  renderQuestion();
+}
 
 // -------------------------------------
 // Pantalla Jugador
 // -------------------------------------
 function setupPlayerPage() {
-  const cta = document.querySelector(".cta-btn");
-  if (!cta) return;
+  const currentPlayer = readSelectedTriviaPlayer();
+  const profile = currentPlayer ? PLAYER_PROFILES[currentPlayer.id] : null;
 
-  cta.addEventListener("click", () => {
-    window.location.href = encodeURI("Pantalla Foto.html");
+  const playerNameEl = document.querySelector(".player-name");
+  const playerMetaEl = document.querySelector(".player-meta");
+  const jerseyEl = document.getElementById("playerJerseyNumber");
+  const ratingEl = document.getElementById("playerRatingText");
+
+  const statGoalsEl = document.getElementById("statGoals");
+  const statAssistsEl = document.getElementById("statAssists");
+  const statMatchesEl = document.getElementById("statMatches");
+  const statTrophiesEl = document.getElementById("statTrophies");
+
+  const factEls = Array.from(document.querySelectorAll(".fact-text"));
+
+  const photoBtn =
+    document.getElementById("photoBtn") ||
+    Array.from(document.querySelectorAll(".cta-btn")).find((btn) =>
+      btn.textContent.toLowerCase().includes("foto")
+    );
+
+  const videoBtn =
+    document.getElementById("videoGalleryBtn") ||
+    Array.from(document.querySelectorAll(".cta-btn")).find((btn) =>
+      btn.textContent.toLowerCase().includes("galería") ||
+      btn.textContent.toLowerCase().includes("galeria")
+    );
+
+  if (currentPlayer) {
+    if (playerNameEl) playerNameEl.textContent = currentPlayer.name;
+  }
+
+  if (profile) {
+    if (playerMetaEl) playerMetaEl.textContent = profile.meta;
+    if (jerseyEl) jerseyEl.textContent = profile.jersey;
+    if (ratingEl) ratingEl.textContent = `Rating: ${profile.rating}`;
+
+    if (statGoalsEl) statGoalsEl.textContent = profile.stats.goals;
+    if (statAssistsEl) statAssistsEl.textContent = profile.stats.assists;
+    if (statMatchesEl) statMatchesEl.textContent = profile.stats.matches;
+    if (statTrophiesEl) statTrophiesEl.textContent = profile.stats.trophies;
+
+    if (factEls[0]) factEls[0].textContent = profile.facts[0] || "";
+    if (factEls[1]) factEls[1].textContent = profile.facts[1] || "";
+    if (factEls[2]) factEls[2].textContent = profile.facts[2] || "";
+  }
+
+  if (photoBtn) {
+    photoBtn.addEventListener("click", () => {
+      window.location.href = encodeURI("Pantalla Foto.html");
+    });
+  }
+
+  if (videoBtn) {
+    videoBtn.addEventListener("click", () => {
+      window.location.href = encodeURI("Pantalla Videos.html");
+    });
+  }
+}
+// -------------------------------------
+// Pantalla Galeria
+// -------------------------------------
+function setupVideoGalleryPage() {
+  const gallery = document.querySelector(".video-gallery");
+  if (!gallery) return;
+
+  const backBtn = document.getElementById("backToPlayerBtn");
+  const modal = document.getElementById("videoModal");
+  const closeBtn = document.getElementById("closeVideoBtn");
+  const player = document.getElementById("galleryVideoPlayer");
+  const title = document.getElementById("videoModalTitle");
+  const cards = Array.from(document.querySelectorAll(".video-card"));
+
+  if (!modal || !closeBtn || !player || !title || cards.length === 0) return;
+
+  function closeVideo() {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    player.pause();
+    player.removeAttribute("src");
+    player.load();
+  }
+
+  function openVideo(card) {
+    const src = card.dataset.video;
+    const poster = card.dataset.poster || "";
+    const videoTitle = card.dataset.title || "Video";
+
+    if (!src) {
+      alert("No se encontró el archivo del video.");
+      return;
+    }
+
+    const accepted = window.confirm("¿Reproducir video?");
+    if (!accepted) return;
+
+    title.textContent = videoTitle;
+    player.src = src;
+    player.poster = poster;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+
+    const playPromise = player.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => {});
+    }
+  }
+
+  backBtn?.addEventListener("click", () => {
+    window.location.href = encodeURI("Pantalla Jugador.html");
+  });
+
+  cards.forEach((card) => {
+    card.addEventListener("click", () => openVideo(card));
+  });
+
+  closeBtn.addEventListener("click", closeVideo);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal || event.target.classList.contains("video-modal__backdrop")) {
+      closeVideo();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-open")) {
+      closeVideo();
+    }
   });
 }
 

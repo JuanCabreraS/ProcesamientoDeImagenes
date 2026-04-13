@@ -221,12 +221,14 @@ body{
   color: #0f172a;
 }
 
-.cta-wrap{
+.cta-stack{
   margin-top: 18px;
   padding-top: 12px;
   position: sticky;
   bottom: calc(10px + env(safe-area-inset-bottom));
   background: linear-gradient(to top, rgba(255,255,255,.96), rgba(255,255,255,0));
+  display: grid;
+  gap: 12px;
 }
 
 .cta-btn{
@@ -240,6 +242,10 @@ body{
   cursor: pointer;
   background: linear-gradient(90deg, var(--m-teal, #19e6d1), var(--m-purple, #4b32d1), var(--m-red, #d81b2c));
   box-shadow: 0 14px 30px rgba(0,0,0,.18);
+}
+
+.cta-btn--secondary{
+  background: linear-gradient(90deg, #0b1220, #1f2937);
 }
 
 .cta-btn:active{

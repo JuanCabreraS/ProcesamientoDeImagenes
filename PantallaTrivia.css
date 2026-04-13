@@ -193,3 +193,25 @@ body{
   border-color: rgba(25,230,209,0.45);
   box-shadow: 0 0 0 3px rgba(25,230,209,0.18);
 }
+
+.answer{
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, color .18s ease;
+}
+
+.answer.is-disabled{
+  pointer-events: none;
+}
+
+.answer.is-correct{
+  background: #dcfce7;
+  border-color: #22c55e;
+  color: #166534;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.18);
+}
+
+.answer.is-wrong{
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.18);
+}

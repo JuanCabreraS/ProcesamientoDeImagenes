@@ -18,7 +18,7 @@
 
         <header class="topbar">
           <div class="topbar__center">
-          <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+            <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
           </div>
 
           <button class="icon-btn" type="button" aria-label="Inicio" data-home>
@@ -33,7 +33,7 @@
 
           <div class="player-head">
             <div class="jersey-circle" aria-label="Número del jugador">
-              <span class="jersey-number">10</span>
+              <span id="playerJerseyNumber" class="jersey-number">10</span>
             </div>
 
             <div class="player-info">
@@ -47,7 +47,7 @@
                           fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
                   </svg>
                 </span>
-                <span>Rating: 00</span>
+                <span id="playerRatingText">Rating: 00</span>
               </div>
             </div>
           </div>
@@ -59,25 +59,25 @@
           <div class="stats-grid" role="list">
             <div class="stat-card" role="listitem">
               <div class="stat-ic" aria-hidden="true">🎯</div>
-              <div class="stat-value">000</div>
+              <div id="statGoals" class="stat-value">000</div>
               <div class="stat-label">Goles</div>
             </div>
 
             <div class="stat-card" role="listitem">
               <div class="stat-ic" aria-hidden="true">🎖️</div>
-              <div class="stat-value">000</div>
+              <div id="statAssists" class="stat-value">000</div>
               <div class="stat-label">Asistencias</div>
             </div>
 
             <div class="stat-card" role="listitem">
               <div class="stat-ic" aria-hidden="true">⚽</div>
-              <div class="stat-value">000</div>
+              <div id="statMatches" class="stat-value">000</div>
               <div class="stat-label">Partidos</div>
             </div>
 
             <div class="stat-card" role="listitem">
               <div class="stat-ic" aria-hidden="true">🏆</div>
-              <div class="stat-value">000</div>
+              <div id="statTrophies" class="stat-value">000</div>
               <div class="stat-label">Trofeos</div>
             </div>
           </div>
@@ -101,8 +101,14 @@
             </div>
           </div>
 
-          <div class="cta-wrap">
-            <button class="cta-btn" type="button">Tomar Foto con Jugador</button>
+          <div class="cta-stack">
+            <button id="videoGalleryBtn" class="cta-btn cta-btn--secondary" type="button">
+              Ver Galería de Videos
+            </button>
+
+            <button id="photoBtn" class="cta-btn" type="button">
+              Tomar Foto con Jugador
+            </button>
           </div>
 
         </div>
@@ -110,6 +116,7 @@
 
     </section>
   </main>
+
   <script src="Usar_camara.js" defer></script>
   <script src="Camaras.js" defer></script>
 </body>

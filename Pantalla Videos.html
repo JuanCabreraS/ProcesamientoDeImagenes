@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Galería de Videos</title>
+
+  <link rel="stylesheet" href="PantallaVideos.css" />
+  <link rel="stylesheet" href="Fondo.css" />
+  <link rel="stylesheet" href="Formato.css" />
+</head>
+
+<body class="theme-monterrey page-videos">
+  <main class="screen">
+    <section class="content" aria-label="Pantalla Galería de Videos">
+
+      <div class="panel">
+        <header class="topbar">
+          <button id="backToPlayerBtn" class="icon-btn" type="button" aria-label="Regresar">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6 9 12l6 6"
+                    fill="none" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div class="topbar__center">
+            <img class="wordmark" src="FIFA.R..png" alt="FIFA.R.">
+            <div class="topbar__subtitle">Galería de Videos</div>
+          </div>
+
+          <button class="icon-btn" type="button" aria-label="Inicio" data-home>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3.2 3.5 10.2a1 1 0 0 0-.36.77V20a1.5 1.5 0 0 0 1.5 1.5H9a1 1 0 0 0 1-1v-5h4v5a1 1 0 0 0 1 1h4.36A1.5 1.5 0 0 0 20.86 20v-9.03a1 1 0 0 0-.36-.77L12 3.2Z"
+                    fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="panel__inner panel__inner--videos">
+          <div class="section-head">
+            <h1 class="section-title">Videos de jugadores</h1>
+            <p class="section-text">Selecciona un video para reproducirlo.</p>
+          </div>
+
+          <div class="video-gallery">
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Neymar Jr - Mejores jugadas"
+              data-video="videos/Neymar.mp4"
+              data-poster="miniaturas/neymar.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/neymar.jpg" alt="Miniatura Neymar Jr">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Neymar Jr - Mejores jugadas</div>
+                <div class="video-meta">Brasil • Delantero</div>
+              </div>
+            </button>
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Messi - Goles y asistencias"
+              data-video="videos/Messi.mp4"
+              data-poster="miniaturas/messi.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/messi.jpg" alt="Miniatura Messi">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Messi - Goles y asistencias</div>
+                <div class="video-meta">Argentina • Delantero</div>
+              </div>
+            </button>
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Mbappé - Velocidad y definición"
+              data-video="videos/Kylian-Mbappe.mp4"
+              data-poster="miniaturas/mbappe.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/mbappe.jpg" alt="Miniatura Mbappé">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Mbappé - Velocidad y definición</div>
+                <div class="video-meta">Francia • Delantero</div>
+              </div>
+            </button>
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Cristiano Ronaldo - Remates"
+              data-video="videos/cristiano.mp4"
+              data-poster="miniaturas/cristiano.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/cristiano.jpg" alt="Miniatura Cristiano Ronaldo">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Cristiano Ronaldo - Remates</div>
+                <div class="video-meta">Portugal • Delantero</div>
+              </div>
+            </button>
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Vinicius Jr - Regates"
+              data-video="videos/Vinicius-Junior.mp4"
+              data-poster="miniaturas/vinicius.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/vinicius.jpg" alt="Miniatura Vinicius Jr">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Vinicius Jr - Regates</div>
+                <div class="video-meta">Brasil • Extremo</div>
+              </div>
+            </button>
+
+            <button
+              class="video-card"
+              type="button"
+              data-title="Haaland - Definición"
+              data-video="videos/haaland.mp4"
+              data-poster="miniaturas/haaland.jpg">
+
+              <div class="video-thumb-wrap">
+                <img class="video-thumb" src="miniaturas/haaland.jpg" alt="Miniatura Haaland">
+                <span class="play-badge">▶</span>
+              </div>
+
+              <div class="video-info">
+                <div class="video-title">Haaland - Definición</div>
+                <div class="video-meta">Noruega • Delantero</div>
+              </div>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <div id="videoModal" class="video-modal" aria-hidden="true">
+    <div class="video-modal__backdrop"></div>
+
+    <div class="video-modal__content" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle">
+      <div class="video-modal__top">
+        <div id="videoModalTitle" class="video-modal__title">Video</div>
+
+        <button id="closeVideoBtn" class="video-close" type="button" aria-label="Cerrar video">
+          ✕
+        </button>
+      </div>
+
+      <video id="galleryVideoPlayer" class="gallery-player" controls playsinline></video>
+    </div>
+  </div>
+
+  <script src="Usar_camara.js" defer></script>
+  <script src="Camaras.js" defer></script>
+</body>
+</html>
