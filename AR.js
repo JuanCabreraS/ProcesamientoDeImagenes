@@ -111,7 +111,6 @@ if (!canvas || !stage) {
   const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
   scene.add(camera);
 
-  // Luces
   scene.add(new THREE.AmbientLight(0xffffff, 1.25));
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x607089, 0.95);
@@ -126,14 +125,12 @@ if (!canvas || !stage) {
   fill.position.set(-3, 2.5, 3);
   scene.add(fill);
 
-  // Grupos principales
   const world = new THREE.Group();
   scene.add(world);
 
   const modelRoot = new THREE.Group();
   world.add(modelRoot);
 
-  // Sombra falsa
   function createShadowTexture() {
     const size = 256;
     const c = document.createElement("canvas");
@@ -189,26 +186,26 @@ if (!canvas || !stage) {
   const restPose = new THREE.Vector3(0, 0, 0);
 
   function getViewConfig() {
-  if (currentFacing === "user") {
+    if (currentFacing === "user") {
+      return {
+        x: isPortrait ? 0.58 : 0.72,
+        y: isPortrait ? -2.55 : -1.12,
+        scale: isPortrait ? 0.90 : 0.86,
+        distanceFactor: isPortrait ? 2.20 : 2.30,
+        distanceOffset: isPortrait ? 1.55 : 1.70,
+        lookOffsetX: isPortrait ? -0.08 : -0.06
+      };
+    }
+
     return {
-      x: isPortrait ? 0.58 : 0.72,
-      y: isPortrait ? -2.55 : -1.12,
-      scale: isPortrait ? 0.90 : 0.86,
-      distanceFactor: isPortrait ? 2.20 : 2.30,
-      distanceOffset: isPortrait ? 1.55 : 1.70,
-      lookOffsetX: isPortrait ? -0.08 : -0.06
+      x: 0,
+      y: isPortrait ? -1.92 : -0.78,
+      scale: isPortrait ? 0.50 : 0.46,
+      distanceFactor: isPortrait ? 3.20 : 3.35,
+      distanceOffset: isPortrait ? 2.95 : 3.15,
+      lookOffsetX: 0
     };
   }
-
-  return {
-    x: 0,
-    y: isPortrait ? -1.92 : -0.78,
-    scale: isPortrait ? 0.50 : 0.46,
-    distanceFactor: isPortrait ? 3.20 : 3.35,
-    distanceOffset: isPortrait ? 2.95 : 3.15,
-    lookOffsetX: 0
-  };
-}
 
   function updateViewPose() {
     const cfg = getViewConfig();
@@ -269,7 +266,6 @@ if (!canvas || !stage) {
     let box = new THREE.Box3().setFromObject(object3D);
     const center = box.getCenter(new THREE.Vector3());
 
-    // Centrar y apoyar pies
     object3D.position.x -= center.x;
     object3D.position.z -= center.z;
     object3D.position.y -= box.min.y;

@@ -181,148 +181,95 @@ const PLAYER_PROFILES = {
     jersey: 10,
     meta: "Argentina • Delantero",
     rating: 95,
-    stats: {
-      goals: 820,
-      assists: 360,
-      matches: 1050,
-      trophies: 44
-    },
+    stats: { goals: 820, assists: 360, matches: 1050, trophies: 44 },
     facts: [
       "Ganó la Copa del Mundo con Argentina en 2022.",
       "Debutó profesionalmente con el FC Barcelona.",
       "Es reconocido por su visión, regate y definición."
     ]
   },
-
   dimaria: {
     jersey: 11,
     meta: "Argentina • Extremo derecho",
     rating: 87,
-    stats: {
-      goals: 180,
-      assists: 260,
-      matches: 720,
-      trophies: 31
-    },
+    stats: { goals: 180, assists: 260, matches: 720, trophies: 31 },
     facts: [
       "Fue campeón olímpico con Argentina en 2008.",
       "Marcó goles importantes en finales con su selección.",
       "Jugó en clubes como Benfica, Real Madrid, PSG y Juventus."
     ]
   },
-
   julian: {
     jersey: 9,
     meta: "Argentina • Delantero",
     rating: 86,
-    stats: {
-      goals: 140,
-      assists: 55,
-      matches: 260,
-      trophies: 12
-    },
+    stats: { goals: 140, assists: 55, matches: 260, trophies: 12 },
     facts: [
       "Su apodo es 'La Araña'.",
       "Se formó y brilló con River Plate.",
       "Fue campeón del mundo con Argentina siendo muy joven."
     ]
   },
-
   mbappe: {
     jersey: 7,
     meta: "Francia • Delantero",
     rating: 92,
-    stats: {
-      goals: 320,
-      assists: 140,
-      matches: 430,
-      trophies: 18
-    },
+    stats: { goals: 320, assists: 140, matches: 430, trophies: 18 },
     facts: [
       "Fue campeón del mundo con Francia en 2018.",
       "Destaca por su gran velocidad y definición.",
       "Debutó profesionalmente con el AS Monaco."
     ]
   },
-
   giroud: {
     jersey: 9,
     meta: "Francia • Delantero",
     rating: 84,
-    stats: {
-      goals: 280,
-      assists: 95,
-      matches: 690,
-      trophies: 14
-    },
+    stats: { goals: 280, assists: 95, matches: 690, trophies: 14 },
     facts: [
       "Es un delantero conocido por su juego aéreo.",
       "Ha jugado en ligas como la francesa, inglesa e italiana.",
       "Destaca por su remate de cabeza y juego de espaldas."
     ]
   },
-
   neymar: {
     jersey: 10,
     meta: "Brasil • Delantero",
     rating: 91,
-    stats: {
-      goals: 440,
-      assists: 220,
-      matches: 710,
-      trophies: 28
-    },
+    stats: { goals: 440, assists: 220, matches: 710, trophies: 28 },
     facts: [
       "Comenzó su carrera profesional en Santos.",
       "Ganó el oro olímpico con Brasil en 2016.",
       "Es famoso por su regate, creatividad y técnica."
     ]
   },
-
   vinicius: {
     jersey: 7,
     meta: "Brasil • Extremo",
     rating: 89,
-    stats: {
-      goals: 110,
-      assists: 75,
-      matches: 320,
-      trophies: 10
-    },
+    stats: { goals: 110, assists: 75, matches: 320, trophies: 10 },
     facts: [
       "Inició su carrera en Flamengo.",
       "Es uno de los jugadores más explosivos por banda.",
       "Destaca por su velocidad y desborde."
     ]
   },
-
   amrabat: {
     jersey: 4,
     meta: "Marruecos • Mediocampista",
     rating: 82,
-    stats: {
-      goals: 12,
-      assists: 18,
-      matches: 310,
-      trophies: 3
-    },
+    stats: { goals: 12, assists: 18, matches: 310, trophies: 3 },
     facts: [
       "Juega como mediocampista de recuperación.",
       "Destacó mucho con Marruecos en el Mundial 2022.",
       "Es conocido por su intensidad y fortaleza física."
     ]
   },
-
   hakimi: {
     jersey: 2,
     meta: "Marruecos • Lateral derecho",
     rating: 86,
-    stats: {
-      goals: 45,
-      assists: 70,
-      matches: 390,
-      trophies: 12
-    },
+    stats: { goals: 45, assists: 70, matches: 390, trophies: 12 },
     facts: [
       "Se desempeña como lateral o carrilero derecho.",
       "Es reconocido por su velocidad en ataque.",
@@ -590,9 +537,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setupCapturedPage();
 });
 
-// -------------------------------------
-// Pantalla principal / index
-// -------------------------------------
 function setupLandingPage() {
   const markerScene = document.getElementById("markerScene");
   if (markerScene) {
@@ -891,9 +835,6 @@ function setupMarkerLandingPage(markerScene) {
   bgVideo?.addEventListener("suspend", forcePreviewRecovery);
 }
 
-// -------------------------------------
-// Pantalla Trivia
-// -------------------------------------
 function setupTriviaPage() {
   const confirmBtn = document.querySelector(".confirm");
   const answers = Array.from(document.querySelectorAll(".answer"));
@@ -1031,9 +972,6 @@ function setupTriviaPage() {
   renderQuestion();
 }
 
-// -------------------------------------
-// Pantalla Jugador
-// -------------------------------------
 function setupPlayerPage() {
   const currentPlayer = readSelectedTriviaPlayer();
   const profile = currentPlayer ? PLAYER_PROFILES[currentPlayer.id] : null;
@@ -1094,9 +1032,7 @@ function setupPlayerPage() {
     });
   }
 }
-// -------------------------------------
-// Pantalla Galeria
-// -------------------------------------
+
 function setupVideoGalleryPage() {
   const gallery = document.querySelector(".video-gallery");
   if (!gallery) return;
@@ -1166,9 +1102,6 @@ function setupVideoGalleryPage() {
   });
 }
 
-// -------------------------------------
-// Utilidades de captura
-// -------------------------------------
 const PHOTO_FILTERS = [
   { label: "Normal", canvasFilter: "none" },
   { label: "Frío", canvasFilter: "saturate(1.15) contrast(1.05) hue-rotate(12deg)" },
@@ -1285,9 +1218,6 @@ function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options 
   return outCanvas.toDataURL("image/png");
 }
 
-// -------------------------------------
-// Pantalla Foto
-// -------------------------------------
 function setupPhotoPage() {
   const shutterBtn = document.getElementById("shutterBtn");
   if (!shutterBtn) return;
@@ -1445,9 +1375,6 @@ function setupPhotoPage() {
   });
 }
 
-// -------------------------------------
-// Pantalla Foto Capturada
-// -------------------------------------
 function setupCapturedPage() {
   const imgEl = document.getElementById("resultImg");
   if (!imgEl) return;
