@@ -358,26 +358,64 @@ function clearTriviaResult() {
   sessionStorage.removeItem("triviaResult");
 }
 
-const TEAM_CONFIG = {
-  mexico: {
-    label: "México",
-    texture: "NewTextures/Mexico.png",
-    targetIndex: 0,
-    defaultAnimation: "Victory"
-  },
-  argentina: {
-    label: "Argentina",
-    texture: "NewTextures/Argentina.png",
-    targetIndex: 1,
-    animation: "Victory"
-  },
-  brasil: {
-    label: "Brasil",
-    texture: "NewTextures/Brasil.png",
-    targetIndex: 2,
-    animation: "Victory"
-  }
-};
+const TEAM_LIST = [
+  { id: "mexico", label: "México", texture: "NewTexturesMexico.png" },
+  { id: "argentina", label: "Argentina", texture: "NewTexturesArgentina.png" },
+  { id: "brasil", label: "Brasil", texture: "NewTexturesBrasil.png" },
+  { id: "francia", label: "Francia", texture: "NewTexturesFrancia.png" },
+  { id: "espana", label: "España", texture: "NewTexturesEspana.png" },
+  { id: "portugal", label: "Portugal", texture: "NewTexturesPortugal.png" },
+  { id: "marruecos", label: "Marruecos", texture: "NewTexturesMarruecos.png" },
+  { id: "japon", label: "Japón", texture: "NewTexturesJapon.png" },
+  { id: "coreadelsur", label: "Corea del Sur", texture: "NewTexturesCoreaDelSur.png" },
+  { id: "estadosunidos", label: "Estados Unidos", texture: "NewTexturesEstadosUnidos.png" },
+  { id: "canada", label: "Canadá", texture: "NewTexturesCanada.png" },
+  { id: "costarica", label: "Costa Rica", texture: "NewTexturesCostaRica.png" },
+  { id: "panama", label: "Panamá", texture: "NewTexturesPanama.png" },
+  { id: "alemania", label: "Alemania", texture: "NewTexturesAlemania.png" },
+  { id: "italia", label: "Italia", texture: "NewTexturesItalia.png" },
+  { id: "inglaterra", label: "Inglaterra", texture: "NewTexturesInglaterra.png" },
+  { id: "croacia", label: "Croacia", texture: "NewTexturesCroacia.png" },
+  { id: "belgica", label: "Bélgica", texture: "NewTexturesBelgica.png" },
+  { id: "paisesbajos", label: "Países Bajos", texture: "NewTexturesPaisesBajos.png" },
+  { id: "suiza", label: "Suiza", texture: "NewTexturesSuiza.png" },
+  { id: "dinamarca", label: "Dinamarca", texture: "NewTexturesDinamarca.png" },
+  { id: "suecia", label: "Suecia", texture: "NewTexturesSuecia.png" },
+  { id: "noruega", label: "Noruega", texture: "NewTexturesNoruega.png" },
+  { id: "polonia", label: "Polonia", texture: "NewTexturesPolonia.png" },
+  { id: "serbia", label: "Serbia", texture: "NewTexturesSerbia.png" },
+  { id: "austria", label: "Austria", texture: "NewTexturesAustria.png" },
+  { id: "ucrania", label: "Ucrania", texture: "NewTexturesUcrania.png" },
+  { id: "turquia", label: "Turquía", texture: "NewTexturesTurquia.png" },
+  { id: "egipto", label: "Egipto", texture: "NewTexturesEgipto.png" },
+  { id: "senegal", label: "Senegal", texture: "NewTexturesSenegal.png" },
+  { id: "nigeria", label: "Nigeria", texture: "NewTexturesNigeria.png" },
+  { id: "camerun", label: "Camerún", texture: "NewTexturesCamerun.png" },
+  { id: "tunez", label: "Túnez", texture: "NewTexturesTunez.png" },
+  { id: "argelia", label: "Argelia", texture: "NewTexturesArgelia.png" },
+  { id: "colombia", label: "Colombia", texture: "NewTexturesColombia.png" },
+  { id: "uruguay", label: "Uruguay", texture: "NewTexturesUruguay.png" },
+  { id: "chile", label: "Chile", texture: "NewTexturesChile.png" },
+  { id: "ecuador", label: "Ecuador", texture: "NewTexturesEcuador.png" },
+  { id: "peru", label: "Perú", texture: "NewTexturesPeru.png" },
+  { id: "paraguay", label: "Paraguay", texture: "NewTexturesParaguay.png" },
+  { id: "australia", label: "Australia", texture: "NewTexturesAustralia.png" },
+  { id: "nuevazelanda", label: "Nueva Zelanda", texture: "NewTexturesNuevaZelanda.png" },
+  { id: "arabiasaudita", label: "Arabia Saudita", texture: "NewTexturesArabiaSaudita.png" }
+];
+
+const TEAM_CONFIG = Object.fromEntries(
+  TEAM_LIST.map((team, index) => [
+    team.id,
+    {
+      ...team,
+      targetIndex: index,
+      defaultAnimation: "Victory"
+    }
+  ])
+);
+
+const arIndexTextureCache = new Map();
 
 function saveSelectedTeam(teamId) {
   sessionStorage.setItem("selectedTeamId", teamId);
@@ -387,27 +425,52 @@ function readSelectedTeam() {
   return sessionStorage.getItem("selectedTeamId") || "mexico";
 }
 
-function applyTeamTextureToObject3D(object3D, teamId) {
+function getMaterialList(material) {
+  return Array.isArray(material) ? material : [material];
+}
+
+function shouldReplaceMaterial(material) {
+  const name = (material?.name || "").toLowerCase();
+  return (
+    name.includes("outfit_top") ||
+    name.includes("outfit_bottom") ||
+    name.includes("outfit_shoes")
+  );
+}
+
+function loadIndexTeamTexture(teamId) {
   const cfg = TEAM_CONFIG[teamId];
-  if (!cfg || !object3D || !window.THREE) return;
+  if (!cfg?.texture || !window.THREE) return null;
+
+  if (arIndexTextureCache.has(teamId)) {
+    return arIndexTextureCache.get(teamId);
+  }
 
   const texture = new THREE.TextureLoader().load(cfg.texture);
   texture.flipY = false;
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+
+  arIndexTextureCache.set(teamId, texture);
+  return texture;
+}
+
+function applyTeamTextureToObject3D(object3D, teamId) {
+  if (!object3D || !window.THREE) return;
+
+  const texture = loadIndexTeamTexture(teamId);
+  if (!texture) {
+    console.warn("No encontré textura para teamId:", teamId);
+    return;
+  }
 
   object3D.traverse((node) => {
     if (!node.isMesh || !node.material) return;
 
-    const materials = Array.isArray(node.material) ? node.material : [node.material];
-    const nextMaterials = materials.map((mat) => {
+    const materialList = getMaterialList(node.material);
+    const nextMaterials = materialList.map((mat) => {
       if (!mat) return mat;
-
-      const matName = (mat.name || "").toLowerCase();
-
-      // Ajusta aquí las partes del uniforme
-      if (!matName.includes("outfit_top") && !matName.includes("outfit_bottom")) {
-        return mat;
-      }
+      if (!shouldReplaceMaterial(mat)) return mat;
 
       const clone = mat.clone();
       clone.map = texture;
@@ -416,6 +479,20 @@ function applyTeamTextureToObject3D(object3D, teamId) {
     });
 
     node.material = Array.isArray(node.material) ? nextMaterials : nextMaterials[0];
+  });
+}
+
+function buildDynamicMindTargets() {
+  const root = document.getElementById("dynamicTargets");
+  if (!root) return;
+
+  root.innerHTML = "";
+
+  TEAM_LIST.forEach((team, index) => {
+    const targetEl = document.createElement("a-entity");
+    targetEl.setAttribute("mindar-image-target", `targetIndex: ${index}`);
+    targetEl.dataset.teamId = team.id;
+    root.appendChild(targetEl);
   });
 }
 
@@ -461,6 +538,7 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       const idle =
         this.findAction("dance") ||
         this.findAction("loop") ||
+        this.findAction("idle") ||
         this.actions[0]?.action ||
         null;
 
@@ -474,21 +552,23 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
     },
 
     findAction(keyword) {
-      const found = this.actions.find((item) => item.name.includes(keyword.toLowerCase()));
+      const found = this.actions.find((item) =>
+        item.name.includes((keyword || "").toLowerCase())
+      );
       return found?.action || null;
     },
 
     setTeam(teamId) {
-      this.data.teamId = teamId;
+      this.data.teamId = teamId || "mexico";
       if (!this.model) return;
 
-      applyTeamTextureToObject3D(this.model, teamId);
+      applyTeamTextureToObject3D(this.model, this.data.teamId);
     },
 
     playClip(clipName = "Victory") {
       if (!this.mixer || !this.actions.length) return;
 
-      const key = clipName.toLowerCase();
+      const key = (clipName || "").toLowerCase();
 
       let nextAction =
         this.findAction(key) ||
@@ -499,9 +579,7 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       if (!nextAction) return;
 
       this.actions.forEach(({ action }) => {
-        if (action !== nextAction) {
-          action.fadeOut(0.15);
-        }
+        if (action !== nextAction) action.fadeOut(0.15);
       });
 
       nextAction.reset();
@@ -523,7 +601,11 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
 
       if (!isLoop) {
         setTimeout(() => {
-          const idle = this.findAction("dance") || this.findAction("loop");
+          const idle =
+            this.findAction("dance") ||
+            this.findAction("loop") ||
+            this.findAction("idle");
+
           if (idle && idle !== nextAction) {
             nextAction.fadeOut(0.15);
             idle.reset();
@@ -620,33 +702,20 @@ function setupLegacyQRPage(video) {
 function setupMarkerLandingPage(markerScene) {
   const scanBtn = document.getElementById("scanBtn");
   const switchBtn = document.getElementById("switchQrCamBtn");
+  const playArAnimBtn = document.getElementById("playArAnimBtn");
+
   const statusEl = document.getElementById("qrStatus");
   const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
-  const target = document.getElementById("markerTarget");
   const bgVideo = document.getElementById("markerBgVideo");
-  const playArAnimBtn = document.getElementById("playArAnimBtn");
+
+  const sharedMarkerModelAnchor = document.getElementById("sharedMarkerModelAnchor");
   const markerPlayerModel = document.getElementById("markerPlayerModel");
 
   let unlocked = false;
   let previewRetryTimer = null;
+  let targetsBound = false;
 
-  function applyActiveTeamToMarker(teamId) {
-    saveSelectedTeam(teamId);
-
-    const controller = markerPlayerModel?.components?.["team-model-controller"];
-    if (controller) {
-      controller.setTeam(teamId);
-    }
-
-    playArAnimBtn?.removeAttribute("disabled");
-  }
-
-  playArAnimBtn?.addEventListener("click", () => {
-    const controller = markerPlayerModel?.components?.["team-model-controller"];
-    if (!controller) return;
-
-    controller.playClip("Victory");
-  });
+  buildDynamicMindTargets();
 
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
@@ -662,7 +731,6 @@ function setupMarkerLandingPage(markerScene) {
     }
 
     sessionStorage.setItem("markerUnlocked", "1");
-    setStatus("Jugador detectado. Ya puedes continuar a la trivia.");
   };
 
   const prepareSceneVisuals = () => {
@@ -732,7 +800,65 @@ function setupMarkerLandingPage(markerScene) {
     schedulePreviewAttach();
   };
 
+  function moveSharedModelToTarget(targetEl, teamId) {
+    if (!targetEl || !sharedMarkerModelAnchor || !markerPlayerModel) return;
+
+    if (sharedMarkerModelAnchor.parentElement !== targetEl) {
+      targetEl.appendChild(sharedMarkerModelAnchor);
+    }
+
+    sharedMarkerModelAnchor.setAttribute("position", "0 -0.18 0");
+    sharedMarkerModelAnchor.setAttribute("rotation", "0 0 0");
+    sharedMarkerModelAnchor.setAttribute("scale", "1 1 1");
+    sharedMarkerModelAnchor.setAttribute("visible", "true");
+
+    const controller = markerPlayerModel.components?.["team-model-controller"];
+    if (controller) {
+      controller.setTeam(teamId);
+    }
+
+    saveSelectedTeam(teamId);
+  }
+
+  function bindAllTeamTargets() {
+    if (targetsBound) return;
+
+    const allTargets = Array.from(
+      document.querySelectorAll("#dynamicTargets [mindar-image-target][data-team-id]")
+    );
+
+    allTargets.forEach((targetEl) => {
+      targetEl.addEventListener("targetFound", () => {
+        schedulePreviewAttach();
+
+        const teamId = targetEl.dataset.teamId || "mexico";
+        moveSharedModelToTarget(targetEl, teamId);
+
+        unlockTrivia();
+        playArAnimBtn?.removeAttribute("disabled");
+
+        const label = TEAM_CONFIG[teamId]?.label || teamId;
+        setStatus(`Jugador detectado: ${label}. Ya puedes continuar a la trivia.`);
+      });
+
+      targetEl.addEventListener("targetLost", () => {
+        sharedMarkerModelAnchor?.setAttribute("visible", "false");
+
+        if (unlocked) {
+          setStatus("Jugador desbloqueado. Puedes seguir aunque el marcador ya no esté en cuadro.");
+          return;
+        }
+
+        frame?.classList.remove("is-detected");
+        setStatus("Marcador fuera de cuadro. Vuelve a apuntar al marcador.");
+      });
+    });
+
+    targetsBound = true;
+  }
+
   switchBtn?.setAttribute("disabled", "disabled");
+  playArAnimBtn?.setAttribute("disabled", "disabled");
 
   if (sessionStorage.getItem("markerUnlocked") === "1") {
     unlockTrivia();
@@ -740,9 +866,12 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("Inicializando cámara AR…");
   }
 
+  bindAllTeamTargets();
+
   markerScene.addEventListener("loaded", () => {
     prepareSceneVisuals();
     schedulePreviewAttach();
+    bindAllTeamTargets();
   });
 
   markerScene.addEventListener("renderstart", () => {
@@ -757,7 +886,7 @@ function setupMarkerLandingPage(markerScene) {
     frame?.classList.add("is-live");
 
     if (!unlocked) {
-      setStatus("AR listo. Apunta al marcador para desbloquear al jugador.");
+      setStatus("AR listo. Apunta al escudo para desbloquear al jugador.");
     }
 
     setTimeout(forcePreviewRecovery, 800);
@@ -769,23 +898,12 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("No se pudo iniciar AR. Verifica permisos de cámara y HTTPS.");
   });
 
-  target?.addEventListener("targetFound", () => {
-    schedulePreviewAttach();
+  playArAnimBtn?.addEventListener("click", () => {
+    const teamId = readSelectedTeam();
+    const controller = markerPlayerModel?.components?.["team-model-controller"];
+    if (!controller) return;
 
-    const teamId = target.dataset.teamId || "mexico";
-    applyActiveTeamToMarker(teamId);
-
-    unlockTrivia();
-  });
-
-  target?.addEventListener("targetLost", () => {
-    if (unlocked) {
-      setStatus("Jugador desbloqueado. Puedes seguir aunque el marcador ya no esté en cuadro.");
-      return;
-    }
-
-    frame?.classList.remove("is-detected");
-    setStatus("Marcador fuera de cuadro. Vuelve a apuntar al marcador.");
+    controller.playClip(TEAM_CONFIG[teamId]?.defaultAnimation || "Victory");
   });
 
   scanBtn?.addEventListener("click", () => {
@@ -796,7 +914,6 @@ function setupMarkerLandingPage(markerScene) {
 
     pickRandomTriviaPlayer();
     clearTriviaResult();
-
     window.location.href = encodeURI("Pantalla Trivia.html");
   });
 
@@ -1306,8 +1423,8 @@ function setupPhotoPage() {
 
       currentFacing = video.dataset.facing || facingMode;
       window.ARPhoto?.setFacingMode?.(currentFacing);
-      const selectedTeamId = sessionStorage.getItem("selectedTeamId") || "mexico";
-      window.ARPhoto?.setTeam?.(selectedTeamId);
+      window.ARPhoto?.setTeam?.(readSelectedTeam());
+
       setStatus("Cámara lista");
     } catch (error) {
       console.error(error);
@@ -1315,11 +1432,10 @@ function setupPhotoPage() {
     }
   }
 
-  startPreview("enviroment");
+  startPreview("environment");
 
   setTimeout(() => {
-    const selectedTeamId = sessionStorage.getItem("selectedTeamId") || "mexico";
-    window.ARPhoto?.setTeam?.(selectedTeamId);
+    window.ARPhoto?.setTeam?.(readSelectedTeam());
   }, 500);
 
   emoteButtons.forEach((button) => {
