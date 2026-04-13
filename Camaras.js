@@ -147,7 +147,7 @@ const TRIVIA_PLAYERS = [
       {
         text: "¿En qué posición juega Amrabat?",
         options: ["Centrocampista", "Portero", "Delantero", "Lateral"],
-        correctIndex: 1
+        correctIndex: 0
       },
       {
         text: "¿Con que club inglés gano la FA Cup en 2023/2024?",
@@ -358,6 +358,173 @@ function clearTriviaResult() {
   sessionStorage.removeItem("triviaResult");
 }
 
+const TEAM_CONFIG = {
+  mexico: {
+    label: "México",
+    texture: "NewTextures/Mexico.png",
+    targetIndex: 0,
+    defaultAnimation: "Victory"
+  }
+};
+
+function saveSelectedTeam(teamId) {
+  sessionStorage.setItem("selectedTeamId", teamId);
+}
+
+function readSelectedTeam() {
+  return sessionStorage.getItem("selectedTeamId") || "mexico";
+}
+
+function applyTeamTextureToObject3D(object3D, teamId) {
+  const cfg = TEAM_CONFIG[teamId];
+  if (!cfg || !object3D || !window.THREE) return;
+
+  const texture = new THREE.TextureLoader().load(cfg.texture);
+  texture.flipY = false;
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  object3D.traverse((node) => {
+    if (!node.isMesh || !node.material) return;
+
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    const nextMaterials = materials.map((mat) => {
+      if (!mat) return mat;
+
+      const matName = (mat.name || "").toLowerCase();
+
+      // Ajusta aquí las partes del uniforme
+      if (!matName.includes("outfit_top") && !matName.includes("outfit_bottom")) {
+        return mat;
+      }
+
+      const clone = mat.clone();
+      clone.map = texture;
+      clone.needsUpdate = true;
+      return clone;
+    });
+
+    node.material = Array.isArray(node.material) ? nextMaterials : nextMaterials[0];
+  });
+}
+
+if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
+  AFRAME.registerComponent("team-model-controller", {
+    schema: {
+      teamId: { type: "string", default: "mexico" }
+    },
+
+    init() {
+      this.model = null;
+      this.mixer = null;
+      this.actions = [];
+      this.activeAction = null;
+
+      this.el.addEventListener("model-loaded", () => {
+        this.model = this.el.getObject3D("mesh");
+        if (!this.model) return;
+
+        this.setupAnimations();
+        this.setTeam(this.data.teamId);
+      });
+    },
+
+    tick(time, delta) {
+      if (this.mixer) {
+        this.mixer.update(delta / 1000);
+      }
+    },
+
+    setupAnimations() {
+      if (!this.model) return;
+
+      const animations = this.model.animations || [];
+      if (!animations.length) return;
+
+      this.mixer = new THREE.AnimationMixer(this.model);
+      this.actions = animations.map((clip) => ({
+        name: (clip.name || "").toLowerCase(),
+        action: this.mixer.clipAction(clip)
+      }));
+
+      const idle =
+        this.findAction("dance") ||
+        this.findAction("loop") ||
+        this.actions[0]?.action ||
+        null;
+
+      if (idle) {
+        idle.reset();
+        idle.enabled = true;
+        idle.setLoop(THREE.LoopRepeat, Infinity);
+        idle.play();
+        this.activeAction = idle;
+      }
+    },
+
+    findAction(keyword) {
+      const found = this.actions.find((item) => item.name.includes(keyword.toLowerCase()));
+      return found?.action || null;
+    },
+
+    setTeam(teamId) {
+      this.data.teamId = teamId;
+      if (!this.model) return;
+
+      applyTeamTextureToObject3D(this.model, teamId);
+    },
+
+    playClip(clipName = "Victory") {
+      if (!this.mixer || !this.actions.length) return;
+
+      const key = clipName.toLowerCase();
+
+      let nextAction =
+        this.findAction(key) ||
+        this.findAction("victory") ||
+        this.findAction("yes") ||
+        this.findAction("dance");
+
+      if (!nextAction) return;
+
+      this.actions.forEach(({ action }) => {
+        if (action !== nextAction) {
+          action.fadeOut(0.15);
+        }
+      });
+
+      nextAction.reset();
+      nextAction.enabled = true;
+
+      const isLoop = key.includes("dance") || key.includes("loop");
+
+      if (isLoop) {
+        nextAction.setLoop(THREE.LoopRepeat, Infinity);
+        nextAction.clampWhenFinished = false;
+      } else {
+        nextAction.setLoop(THREE.LoopOnce, 1);
+        nextAction.clampWhenFinished = true;
+      }
+
+      nextAction.fadeIn(0.15);
+      nextAction.play();
+      this.activeAction = nextAction;
+
+      if (!isLoop) {
+        setTimeout(() => {
+          const idle = this.findAction("dance") || this.findAction("loop");
+          if (idle && idle !== nextAction) {
+            nextAction.fadeOut(0.15);
+            idle.reset();
+            idle.fadeIn(0.15);
+            idle.play();
+            this.activeAction = idle;
+          }
+        }, 1400);
+      }
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   setupHomeButtons();
   setupLandingPage();
@@ -445,9 +612,29 @@ function setupMarkerLandingPage(markerScene) {
   const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
   const target = document.getElementById("markerTarget");
   const bgVideo = document.getElementById("markerBgVideo");
+  const playArAnimBtn = document.getElementById("playArAnimBtn");
+  const markerPlayerModel = document.getElementById("markerPlayerModel");
 
   let unlocked = false;
   let previewRetryTimer = null;
+
+  function applyActiveTeamToMarker(teamId) {
+    saveSelectedTeam(teamId);
+
+    const controller = markerPlayerModel?.components?.["team-model-controller"];
+    if (controller) {
+      controller.setTeam(teamId);
+    }
+
+    playArAnimBtn?.removeAttribute("disabled");
+  }
+
+  playArAnimBtn?.addEventListener("click", () => {
+    const controller = markerPlayerModel?.components?.["team-model-controller"];
+    if (!controller) return;
+
+    controller.playClip("Victory");
+  });
 
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
@@ -572,6 +759,10 @@ function setupMarkerLandingPage(markerScene) {
 
   target?.addEventListener("targetFound", () => {
     schedulePreviewAttach();
+
+    const teamId = target.dataset.teamId || "mexico";
+    applyActiveTeamToMarker(teamId);
+
     unlockTrivia();
   });
 

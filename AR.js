@@ -3,6 +3,45 @@ import { GLTFLoader } from "https://esm.sh/three@0.160.0/examples/jsm/loaders/GL
 
 const MODEL_URL = new URL("Futbolista.glb", import.meta.url).href;
 
+const TEAM_TEXTURES = {
+  mexico: new URL("Mexico.png", import.meta.url).href
+};
+
+function getSelectedTeamId() {
+  return sessionStorage.getItem("selectedTeamId") || "mexico";
+}
+
+function applyTeamTextureToModel(object3D, teamId) {
+  const textureUrl = TEAM_TEXTURES[teamId];
+  if (!textureUrl) return;
+
+  const texture = new THREE.TextureLoader().load(textureUrl);
+  texture.flipY = false;
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  object3D.traverse((node) => {
+    if (!node.isMesh || !node.material) return;
+
+    const materials = Array.isArray(node.material) ? node.material : [node.material];
+    const nextMaterials = materials.map((mat) => {
+      if (!mat) return mat;
+
+      const matName = (mat.name || "").toLowerCase();
+
+      if (!matName.includes("outfit_top") && !matName.includes("outfit_bottom")) {
+        return mat;
+      }
+
+      const clone = mat.clone();
+      clone.map = texture;
+      clone.needsUpdate = true;
+      return clone;
+    });
+
+    node.material = Array.isArray(node.material) ? nextMaterials : nextMaterials[0];
+  });
+}
+
 const canvas = document.getElementById("arCanvas");
 const stage = document.querySelector(".ar-stage");
 const statusEl = document.getElementById("photoStatus");
@@ -273,44 +312,39 @@ if (!canvas || !stage) {
   function findActionByLabel(label) {
     const key = (label || "").toLowerCase();
 
-    let found = actions.find((a) => a.name.includes(key));
-
-    if (!found && key.includes("cele")) {
-      found = actions.find((a) =>
-        a.name.includes("cele") ||
-        a.name.includes("vict") ||
-        a.name.includes("goal") ||
-        a.name.includes("dance") ||
-        a.name.includes("win")
+    if (key.includes("cele")) {
+      return (
+        actions.find((a) => a.name.includes("victory"))?.action ||
+        actions.find((a) => a.name.includes("dance"))?.action ||
+        defaultAction
       );
     }
 
-    if (!found && key.includes("sonr")) {
-      found = actions.find((a) =>
-        a.name.includes("idle") ||
-        a.name.includes("pose") ||
-        a.name.includes("smile")
+    if (key.includes("energ")) {
+      return (
+        actions.find((a) => a.name.includes("dance"))?.action ||
+        defaultAction
       );
     }
 
-    if (!found && key.includes("energ")) {
-      found = actions.find((a) =>
-        a.name.includes("run") ||
-        a.name.includes("jump") ||
-        a.name.includes("kick") ||
-        a.name.includes("power")
+    if (key.includes("sonr")) {
+      return (
+        actions.find((a) => a.name.includes("yes"))?.action ||
+        defaultAction
       );
     }
 
-    if (!found && key.includes("cor")) {
-      found = actions.find((a) =>
-        a.name.includes("pose") ||
-        a.name.includes("idle") ||
-        a.name.includes("heart")
+    if (key.includes("cor")) {
+      return (
+        actions.find((a) => a.name.includes("yes"))?.action ||
+        defaultAction
       );
     }
 
-    return found?.action || defaultAction || null;
+    return (
+      actions.find((a) => a.name.includes("dance"))?.action ||
+      defaultAction
+    );
   }
 
   setStatus("Cargando jugador…");
@@ -328,6 +362,7 @@ if (!canvas || !stage) {
       });
 
       modelRoot.add(model);
+      applyTeamTextureToModel(model, getSelectedTeamId());
       fitModelToView(model);
       buildActions(gltf.animations || [], model);
 
