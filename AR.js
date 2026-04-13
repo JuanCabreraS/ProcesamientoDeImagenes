@@ -439,7 +439,6 @@ if (!canvas || !stage) {
       });
 
       modelRoot.add(model);
-      applyTeamTextureToModel(model, getSelectedTeamId());
       modelSceneRef = model;
       applyPendingTeamTexture();
       fitModelToView(model);
