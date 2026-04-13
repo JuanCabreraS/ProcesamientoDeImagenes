@@ -3,47 +3,55 @@ import { GLTFLoader } from "https://esm.sh/three@0.160.0/examples/jsm/loaders/GL
 
 const MODEL_URL = new URL("Futbolista.glb", import.meta.url).href;
 
-const TEAM_TEXTURES = {
-  mexico: new URL("Mexico.png", import.meta.url).href
-};
+const TEAM_LIST = [
+  { id: "mexico", texture: "NewTextures/Mexico.png" },
+  { id: "argentina", texture: "NewTextures/Argentina.png" },
+  { id: "brasil", texture: "NewTextures/Brasil.png" },
+  { id: "francia", texture: "NewTextures/Francia.png" },
+  { id: "espana", texture: "NewTextures/España.png" },
+  { id: "portugal", texture: "NewTextures/Portugal.png" },
+  { id: "marruecos", texture: "NewTextures/Marruecos.png" },
+  { id: "japon", texture: "NewTextures/Japon.png" },
+  { id: "coreadelsur", texture: "NewTextures/Corea.png" },
+  { id: "estadosunidos", texture: "NewTextures/EEUU.png" },
+  { id: "canada", texture: "NewTextures/Canada.png" },
+  { id: "costademarfil", texture: "NewTextures/Costa_de_Marfil.png" },
+  { id: "panama", texture: "NewTextures/Panama.png" },
+  { id: "alemania", texture: "NewTextures/Alemania.png" },
+  { id: "iran", texture: "NewTextures/Iran.png" },
+  { id: "inglaterra", texture: "NewTextures/Inglaterra.png" },
+  { id: "croacia", texture: "NewTextures/Croacia.png" },
+  { id: "belgica", texture: "NewTextures/Belgica.png" },
+  { id: "paisesbajos", texture: "NewTextures/Paises_Bajos.png" },
+  { id: "suiza", texture: "NewTextures/Suiza.png" },
+  //{ id: "dinamarca", texture: "NewTextures/Dinamarca.png" },
+  { id: "sudafrica", texture: "NewTextures/Sudafrica.png" },
+  { id: "noruega", texture: "NewTextures/Noruega.png" },
+  //{ id: "polonia", texture: "NewTextures/Polonia.png" },
+  //{ id: "serbia", texture: "NewTextures/Serbia.png" },
+  //{ id: "australia", texture: "NewTextures/Australia.png" },
+  //{ id: "ucrania", texture: "NewTextures/Ucrania.png" },
+  //{ id: "turquia", texture: "NewTextures/Turquia.png" },
+  { id: "egipto", texture: "NewTextures/Egipto.png" },
+  { id: "senegal", texture: "NewTextures/Senegal.png" },
+  //{ id: "nigeria", texture: "NewTextures/Nigeria.png" },
+  //{ id: "camerun", texture: "NewTextures/Camerun.png" },
+  { id: "tunez", texture: "NewTextures/Tunez.png" },
+  { id: "argelia", texture: "NewTextures/Argelia.png" },
+  { id: "colombia", texture: "NewTextures/Colombia.png" },
+  { id: "uruguay", texture: "NewTextures/Uruguay.png" },
+  //{ id: "chile", texture: "NewTextures/Chile.png" },
+  { id: "ecuador", texture: "NewTextures/Ecuador.png" },
+  //{ id: "peru", texture: "NewTextures/Peru.png" },
+  { id: "paraguay", texture: "NewTextures/Paraguay.png" },
+  { id: "australia", texture: "NewTextures/Australia.png" },
+  { id: "nuevazelanda", texture: "NewTextures/Nueva_Zelanda.png" },
+  //{ id: "uzbekistan", texture: "NewTextures/Uzbekistan.png" }
+];
 
-function applyTeamTextureToModel(object3D, teamId) {
-  const textureUrl = TEAM_TEXTURES[teamId];
-  if (!textureUrl) return;
-
-  const texture = new THREE.TextureLoader().load(textureUrl);
-  texture.flipY = false;
-  texture.colorSpace = THREE.SRGBColorSpace;
-
-  object3D.traverse((node) => {
-    if (!node.isMesh || !node.material) return;
-
-    const materials = Array.isArray(node.material) ? node.material : [node.material];
-    const nextMaterials = materials.map((mat) => {
-      if (!mat) return mat;
-
-      const matName = (mat.name || "").toLowerCase();
-
-      if (!matName.includes("outfit_top") && !matName.includes("outfit_bottom")) {
-        return mat;
-      }
-
-      const clone = mat.clone();
-      clone.map = texture;
-      clone.needsUpdate = true;
-      return clone;
-    });
-
-    node.material = Array.isArray(node.material) ? nextMaterials : nextMaterials[0];
-  });
-}
-
-const TEAM_CONFIG = {
-  mexico: {
-    label: "México",
-    texture: new URL("Mexico.png", import.meta.url).href
-  }
-};
+const PHOTO_TEAM_TEXTURES = Object.fromEntries(
+  TEAM_LIST.map((team) => [team.id, new URL(team.texture, import.meta.url).href])
+);
 
 const teamTextureCache = new Map();
 
@@ -65,14 +73,14 @@ function shouldReplaceMaterial(material) {
 }
 
 function loadTeamTexture(teamId) {
-  const cfg = TEAM_CONFIG[teamId];
-  if (!cfg?.texture) return null;
+  const textureUrl = PHOTO_TEAM_TEXTURES[teamId];
+  if (!textureUrl) return null;
 
   if (teamTextureCache.has(teamId)) {
     return teamTextureCache.get(teamId);
   }
 
-  const texture = new THREE.TextureLoader().load(cfg.texture);
+  const texture = new THREE.TextureLoader().load(textureUrl);
   texture.flipY = false;
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.needsUpdate = true;
@@ -342,6 +350,8 @@ if (!canvas || !stage) {
     }));
 
     const idle =
+      actions.find((a) => a.name.includes("dance")) ||
+      actions.find((a) => a.name.includes("loop")) ||
       actions.find((a) => a.name.includes("idle")) ||
       actions.find((a) => a.name.includes("pose")) ||
       actions[0] ||
@@ -436,7 +446,9 @@ if (!canvas || !stage) {
 
       modelRoot.add(model);
       modelSceneRef = model;
+
       applyPendingTeamTexture();
+
       fitModelToView(model);
       buildActions(gltf.animations || [], model);
 
