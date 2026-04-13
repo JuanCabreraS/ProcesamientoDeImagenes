@@ -62,18 +62,29 @@
 
                 <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-                <a-entity id="markerTarget" 
-                  mindar-image-target="targetIndex: 0" 
-                  data-team-id="mexico">
-                  <a-entity
-                    id="markerModelWrap"
-                    position="0 -0.18 0"
-                    rotation="0 0 0"
-                    scale="1 1 1">
+                <a-entity mindar-image-target="targetIndex: 0" data-team-id="mexico">
+                  <a-entity position="0 -0.18 0" rotation="0 0 0" scale="1 1 1">
                     <a-gltf-model
-                      id="markerPlayerModel"
                       src="#modeloGLB"
                       team-model-controller="teamId: mexico">
+                    </a-gltf-model>
+                  </a-entity>
+                </a-entity>
+
+                <a-entity mindar-image-target="targetIndex: 1" data-team-id="argentina">
+                  <a-entity position="0 -0.18 0" rotation="0 0 0" scale="1 1 1">
+                    <a-gltf-model
+                      src="#modeloGLB"
+                      team-model-controller="teamId: argentina">
+                    </a-gltf-model>
+                  </a-entity>
+                </a-entity>
+
+                <a-entity mindar-image-target="targetIndex: 2" data-team-id="brasil">
+                  <a-entity position="0 -0.18 0" rotation="0 0 0" scale="1 1 1">
+                    <a-gltf-model
+                      src="#modeloGLB"
+                      team-model-controller="teamId: brasil">
                     </a-gltf-model>
                   </a-entity>
                 </a-entity>

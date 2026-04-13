@@ -7,10 +7,6 @@ const TEAM_TEXTURES = {
   mexico: new URL("Mexico.png", import.meta.url).href
 };
 
-function getSelectedTeamId() {
-  return sessionStorage.getItem("selectedTeamId") || "mexico";
-}
-
 function applyTeamTextureToModel(object3D, teamId) {
   const textureUrl = TEAM_TEXTURES[teamId];
   if (!textureUrl) return;

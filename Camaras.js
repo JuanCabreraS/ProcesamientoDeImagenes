@@ -364,6 +364,18 @@ const TEAM_CONFIG = {
     texture: "NewTextures/Mexico.png",
     targetIndex: 0,
     defaultAnimation: "Victory"
+  },
+  argentina: {
+    label: "Argentina",
+    texture: "NewTextures/Argentina.png",
+    targetIndex: 1,
+    animation: "Victory"
+  },
+  brasil: {
+    label: "Brasil",
+    texture: "NewTextures/Brasil.png",
+    targetIndex: 2,
+    animation: "Victory"
   }
 };
 
