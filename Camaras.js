@@ -420,6 +420,17 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
         this.model = this.el.getObject3D("mesh");
         if (!this.model) return;
 
+        this.model.traverse((node) => {
+          if (!node.isMesh) return;
+
+          node.frustumCulled = false;
+          node.visible = true;
+
+          if (node.material) {
+            node.material.needsUpdate = true;
+          }
+        });
+
         this.setupAnimations();
         this.setTeam(this.data.teamId);
       });
@@ -471,6 +482,13 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       if (!this.model) return;
 
       applyTeamTextureToObject3D(this.model, this.data.teamId);
+
+      this.model.traverse((node) => {
+        if (node.isMesh) {
+          node.visible = true;
+          node.frustumCulled = false;
+        }
+      });
     },
 
     playClip(clipName = "Victory") {
@@ -716,6 +734,26 @@ function setupMarkerLandingPage(markerScene) {
     sharedMarkerModelAnchor.setAttribute("rotation", "0 0 0");
     sharedMarkerModelAnchor.setAttribute("scale", "1 1 1");
     sharedMarkerModelAnchor.setAttribute("visible", "true");
+
+    if (sharedMarkerModelAnchor.object3D) {
+      sharedMarkerModelAnchor.object3D.visible = true;
+    }
+
+    if (markerPlayerModel.object3D) {
+      markerPlayerModel.object3D.visible = true;
+    }
+
+    const mesh = markerPlayerModel.getObject3D("mesh");
+    if (mesh) {
+      mesh.visible = true;
+      mesh.traverse((node) => {
+        if (node.isMesh) {
+          node.visible = true;
+          node.frustumCulled = false;
+          if (node.material) node.material.needsUpdate = true;
+        }
+      });
+    }
 
     const controller = markerPlayerModel.components?.["team-model-controller"];
     if (controller) {
