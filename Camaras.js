@@ -400,6 +400,19 @@ function buildDynamicMindTargets() {
     const targetEl = document.createElement("a-entity");
     targetEl.setAttribute("mindar-image-target", `targetIndex: ${index}`);
     targetEl.dataset.teamId = team.id;
+
+    const wrapEl = document.createElement("a-entity");
+    wrapEl.setAttribute("position", "0 -0.18 0");
+    wrapEl.setAttribute("rotation", "0 0 0");
+    wrapEl.setAttribute("scale", "1 1 1");
+
+    const modelEl = document.createElement("a-gltf-model");
+    modelEl.setAttribute("src", "#modeloGLB");
+    modelEl.setAttribute("team-model-controller", `teamId: ${team.id}`);
+    modelEl.dataset.role = "team-model";
+
+    wrapEl.appendChild(modelEl);
+    targetEl.appendChild(wrapEl);
     root.appendChild(targetEl);
   });
 }
@@ -487,6 +500,7 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
         if (node.isMesh) {
           node.visible = true;
           node.frustumCulled = false;
+          if (node.material) node.material.needsUpdate = true;
         }
       });
     },
@@ -631,12 +645,10 @@ function setupMarkerLandingPage(markerScene) {
   const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
   const bgVideo = document.getElementById("markerBgVideo");
 
-  const sharedMarkerModelAnchor = document.getElementById("sharedMarkerModelAnchor");
-  const markerPlayerModel = document.getElementById("markerPlayerModel");
-
   let unlocked = false;
   let previewRetryTimer = null;
   let targetsBound = false;
+  let activeMarkerModelEl = null;
 
   buildDynamicMindTargets();
 
@@ -723,46 +735,6 @@ function setupMarkerLandingPage(markerScene) {
     schedulePreviewAttach();
   };
 
-  function moveSharedModelToTarget(targetEl, teamId) {
-    if (!targetEl || !sharedMarkerModelAnchor || !markerPlayerModel) return;
-
-    if (sharedMarkerModelAnchor.parentElement !== targetEl) {
-      targetEl.appendChild(sharedMarkerModelAnchor);
-    }
-
-    sharedMarkerModelAnchor.setAttribute("position", "0 -0.18 0");
-    sharedMarkerModelAnchor.setAttribute("rotation", "0 0 0");
-    sharedMarkerModelAnchor.setAttribute("scale", "1 1 1");
-    sharedMarkerModelAnchor.setAttribute("visible", "true");
-
-    if (sharedMarkerModelAnchor.object3D) {
-      sharedMarkerModelAnchor.object3D.visible = true;
-    }
-
-    if (markerPlayerModel.object3D) {
-      markerPlayerModel.object3D.visible = true;
-    }
-
-    const mesh = markerPlayerModel.getObject3D("mesh");
-    if (mesh) {
-      mesh.visible = true;
-      mesh.traverse((node) => {
-        if (node.isMesh) {
-          node.visible = true;
-          node.frustumCulled = false;
-          if (node.material) node.material.needsUpdate = true;
-        }
-      });
-    }
-
-    const controller = markerPlayerModel.components?.["team-model-controller"];
-    if (controller) {
-      controller.setTeam(teamId);
-    }
-
-    saveSelectedTeam(teamId);
-  }
-
   function bindAllTeamTargets() {
     if (targetsBound) return;
 
@@ -771,12 +743,36 @@ function setupMarkerLandingPage(markerScene) {
     );
 
     allTargets.forEach((targetEl) => {
+      const modelEl = targetEl.querySelector('[data-role="team-model"]');
+
       targetEl.addEventListener("targetFound", () => {
         schedulePreviewAttach();
 
         const teamId = targetEl.dataset.teamId || "mexico";
-        moveSharedModelToTarget(targetEl, teamId);
+        activeMarkerModelEl = modelEl;
 
+        if (modelEl?.object3D) {
+          modelEl.object3D.visible = true;
+        }
+
+        const mesh = modelEl?.getObject3D?.("mesh");
+        if (mesh) {
+          mesh.visible = true;
+          mesh.traverse((node) => {
+            if (node.isMesh) {
+              node.visible = true;
+              node.frustumCulled = false;
+              if (node.material) node.material.needsUpdate = true;
+            }
+          });
+        }
+
+        const controller = modelEl?.components?.["team-model-controller"];
+        if (controller) {
+          controller.setTeam(teamId);
+        }
+
+        saveSelectedTeam(teamId);
         unlockTrivia();
         playArAnimBtn?.removeAttribute("disabled");
 
@@ -785,7 +781,13 @@ function setupMarkerLandingPage(markerScene) {
       });
 
       targetEl.addEventListener("targetLost", () => {
-        sharedMarkerModelAnchor?.setAttribute("visible", "false");
+        if (modelEl?.object3D) {
+          modelEl.object3D.visible = false;
+        }
+
+        if (activeMarkerModelEl === modelEl) {
+          activeMarkerModelEl = null;
+        }
 
         if (unlocked) {
           setStatus("Jugador desbloqueado. Puedes seguir aunque el marcador ya no esté en cuadro.");
@@ -842,10 +844,10 @@ function setupMarkerLandingPage(markerScene) {
   });
 
   playArAnimBtn?.addEventListener("click", () => {
-    const teamId = readSelectedTeam();
-    const controller = markerPlayerModel?.components?.["team-model-controller"];
+    const controller = activeMarkerModelEl?.components?.["team-model-controller"];
     if (!controller) return;
 
+    const teamId = readSelectedTeam();
     controller.playClip(TEAM_CONFIG[teamId]?.defaultAnimation || "Victory");
   });
 
