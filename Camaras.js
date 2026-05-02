@@ -306,11 +306,52 @@ function clearTriviaResult() {
 }
 
 const TEAM_LIST = [
-  { id: "mexico", label: "México", texture: "NewTextures/Mexico.png" },
+  { id: "alemania", label: "Alemania", texture: "NewTextures/Alemania.png" },
+  { id: "arabia_saudita", label: "Arabia Saudita", texture: "NewTextures/Saudi_Arabia.png" },
+  { id: "argelia", label: "Argelia", texture: "NewTextures/Argelia.png" },
   { id: "argentina", label: "Argentina", texture: "NewTextures/Argentina.png" },
+  { id: "australia", label: "Australia", texture: "NewTextures/Australia.png" },
+  { id: "belgica", label: "Bélgica", texture: "NewTextures/Belgica.png" },
   { id: "brasil", label: "Brasil", texture: "NewTextures/Brasil.png" },
+  { id: "canada", label: "Canadá", texture: "NewTextures/Canada.png" },
+  { id: "catar", label: "Catar", texture: "NewTextures/Catar.png" },
+  { id: "colombia", label: "Colombia", texture: "NewTextures/Colombia.png" },
+  { id: "costa_de_marfil", label: "Costa de Marfil", texture: "NewTextures/Costa_de_Marfil.png" },
+  { id: "croacia", label: "Croacia", texture: "NewTextures/Croacia.png" },
+  { id: "curacao", label: "Curacao", texture: "NewTextures/Curazao.png" },
+  { id: "ecuador", label: "Ecuador", texture: "NewTextures/Ecuador.png" },
+  { id: "estados_unidos", label: "Estados Unidos", texture: "NewTextures/EEUU.png" },
+  { id: "egipto", label: "Egipto", texture: "NewTextures/Egipto.png" },
+  { id: "escocia", label: "Escocia", texture: "NewTextures/Escocia.png" },
+  { id: "espana", label: "España", texture: "NewTextures/España.png" },
   { id: "francia", label: "Francia", texture: "NewTextures/Francia.png" },
+  { id: "ghana", label: "Ghana", texture: "NewTextures/Ghana.png" },
+  { id: "haiti", label: "Haití", texture: "NewTextures/Haiti.png" },
+  { id: "inglaterra", label: "Inglaterra", texture: "NewTextures/Inglaterra.png" },
+  { id: "iran", label: "Irán", texture: "NewTextures/Iran.png" },
+  { id: "islas_del_cabo_verde", label: "Islas del Cabo Verde", texture: "NewTextures/Islas_del_Cabo_Verde.png" },
+  { id: "japon", label: "Japón", texture: "NewTextures/Japon.png" },
+  { id: "jordania", label: "Jordania", texture: "NewTextures/Jordania.png" },
+  { id: "korea", label: "Korea", texture: "NewTextures/Corea.png" },
+  { id: "marruecos", label: "Marruecos", texture: "NewTextures/Marruecos.png" },
+  { id: "mexico", label: "México", texture: "NewTextures/Mexico.png" },
+  { id: "noruega", label: "Noruega", texture: "NewTextures/Noruega.png" },
+  { id: "nueva_zelanda", label: "Nueva Zelanda", texture: "NewTextures/Nueva_Zelanda.png" },
+  { id: "paises_bajos", label: "Países Bajos", texture: "NewTextures/Paises_Bajos.png" },
+  { id: "panama", label: "Panamá", texture: "NewTextures/Panama.png" },
+  { id: "paraguay", label: "Paraguay", texture: "NewTextures/Paraguay.png" },
+  { id: "portugal", label: "Portugal", texture: "NewTextures/Portugal.png" },
+  { id: "senegal", label: "Senegal", texture: "NewTextures/Senegal.png" },
+  { id: "sudafrica", label: "Sudáfrica", texture: "NewTextures/Sudafrica.png" },
+  { id: "suiza", label: "Suiza", texture: "NewTextures/Suiza.png" },
+  { id: "tunez", label: "Túnez", texture: "NewTextures/Tunez.png" },
+  { id: "uruguay", label: "Uruguay", texture: "NewTextures/Uruguay.png" },
+  { id: "uzbekistan", label: "Uzbekistan", texture: "NewTextures/Uzbekistan.png" }
 ];
+
+if (TEAM_LIST.length !== 41) {
+  console.warn("Camaras.js: TEAM_LIST debe tener 41 equipos según la lista actual.");
+}
 
 const TEAM_CONFIG = Object.fromEntries(
   TEAM_LIST.map((team, index) => [

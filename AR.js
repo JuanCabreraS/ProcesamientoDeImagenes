@@ -4,11 +4,52 @@ import { GLTFLoader } from "https://esm.sh/three@0.160.0/examples/jsm/loaders/GL
 const MODEL_URL = new URL("Futbolista.glb", import.meta.url).href;
 
 const TEAM_LIST = [
-  { id: "mexico", texture: "NewTextures/Mexico.png" },
+  { id: "alemania", texture: "NewTextures/Alemania.png" },
+  { id: "arabia_saudita", texture: "NewTextures/Saudi_Arabia.png" },
+  { id: "argelia", texture: "NewTextures/Argelia.png" },
   { id: "argentina", texture: "NewTextures/Argentina.png" },
+  { id: "australia", texture: "NewTextures/Australia.png" },
+  { id: "belgica", texture: "NewTextures/Belgica.png" },
   { id: "brasil", texture: "NewTextures/Brasil.png" },
+  { id: "canada", texture: "NewTextures/Canada.png" },
+  { id: "catar", texture: "NewTextures/Catar.png" },
+  { id: "colombia", texture: "NewTextures/Colombia.png" },
+  { id: "costa_de_marfil", texture: "NewTextures/Costa_de_Marfil.png" },
+  { id: "croacia", texture: "NewTextures/Croacia.png" },
+  { id: "curacao", texture: "NewTextures/Curazao.png" },
+  { id: "ecuador", texture: "NewTextures/Ecuador.png" },
+  { id: "estados_unidos", texture: "NewTextures/EEUU.png" },
+  { id: "egipto", texture: "NewTextures/Egipto.png" },
+  { id: "escocia", texture: "NewTextures/Escocia.png" },
+  { id: "espana", texture: "NewTextures/España.png" },
   { id: "francia", texture: "NewTextures/Francia.png" },
+  { id: "ghana", texture: "NewTextures/Ghana.png" },
+  { id: "haiti", texture: "NewTextures/Haiti.png" },
+  { id: "inglaterra", texture: "NewTextures/Inglaterra.png" },
+  { id: "iran", texture: "NewTextures/Iran.png" },
+  { id: "islas_del_cabo_verde", texture: "NewTextures/Islas_del_Cabo_Verde.png" },
+  { id: "japon", texture: "NewTextures/Japon.png" },
+  { id: "jordania", texture: "NewTextures/Jordania.png" },
+  { id: "korea", texture: "NewTextures/Corea.png" },
+  { id: "marruecos", texture: "NewTextures/Marruecos.png" },
+  { id: "mexico", texture: "NewTextures/Mexico.png" },
+  { id: "noruega", texture: "NewTextures/Noruega.png" },
+  { id: "nueva_zelanda", texture: "NewTextures/Nueva_Zelanda.png" },
+  { id: "paises_bajos", texture: "NewTextures/Paises_Bajos.png" },
+  { id: "panama", texture: "NewTextures/Panama.png" },
+  { id: "paraguay", texture: "NewTextures/Paraguay.png" },
+  { id: "portugal", texture: "NewTextures/Portugal.png" },
+  { id: "senegal", texture: "NewTextures/Senegal.png" },
+  { id: "sudafrica", texture: "NewTextures/Sudafrica.png" },
+  { id: "suiza", texture: "NewTextures/Suiza.png" },
+  { id: "tunez", texture: "NewTextures/Tunez.png" },
+  { id: "uruguay", texture: "NewTextures/Uruguay.png" },
+  { id: "uzbekistan", texture: "NewTextures/Uzbekistan.png" }
 ];
+
+if (TEAM_LIST.length !== 41) {
+  console.warn("AR.js: TEAM_LIST debe tener 41 equipos según la lista actual.");
+}
 
 const PHOTO_TEAM_TEXTURES = Object.fromEntries(
   TEAM_LIST.map((team) => [team.id, new URL(team.texture, import.meta.url).href])
