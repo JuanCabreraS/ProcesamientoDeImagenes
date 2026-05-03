@@ -314,7 +314,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 1.85;
+    const targetHeight = 1.35;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
