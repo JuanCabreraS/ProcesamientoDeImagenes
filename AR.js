@@ -347,23 +347,33 @@ if (!canvas || !stage) {
       action: mixer.clipAction(clip)
     }));
 
-    const idle =
-      actions.find((a) => a.name.includes("dance")) ||
-      actions.find((a) => a.name.includes("loop")) ||
-      actions.find((a) => a.name.includes("idle")) ||
-      actions.find((a) => a.name.includes("pose")) ||
-      actions[0] ||
-      null;
+    defaultAction = null;
+  }
 
-    defaultAction = idle?.action || null;
+  function findActionByClipName(clipName) {
+    const key = (clipName || "").toLowerCase();
+    const found = actions.find((a) => a.name === key || a.name.includes(key));
+    return found?.action || null;
+  }
 
-    if (defaultAction) {
-      defaultAction.reset();
-      defaultAction.enabled = true;
-      defaultAction.setLoop(THREE.LoopRepeat, Infinity);
-      defaultAction.fadeIn(0.2);
-      defaultAction.play();
-    }
+  function stopAllActions() {
+    if (!actions.length) return;
+
+    actions.forEach(({ action }) => {
+      action.stop();
+      action.reset();
+      action.enabled = false;
+    });
+  }
+
+  function returnToStaticPose() {
+    activeEmote = "";
+    emoteEndAt = 0;
+
+    stopAllActions();
+
+    world.position.copy(restPose);
+    modelRoot.rotation.set(0, 0, 0);
   }
 
   function playAction(nextAction, once = false) {
@@ -391,41 +401,7 @@ if (!canvas || !stage) {
   }
 
   function findActionByLabel(label) {
-    const key = (label || "").toLowerCase();
-
-    if (key.includes("cele")) {
-      return (
-        actions.find((a) => a.name.includes("victory"))?.action ||
-        actions.find((a) => a.name.includes("dance"))?.action ||
-        defaultAction
-      );
-    }
-
-    if (key.includes("energ")) {
-      return (
-        actions.find((a) => a.name.includes("dance"))?.action ||
-        defaultAction
-      );
-    }
-
-    if (key.includes("sonr")) {
-      return (
-        actions.find((a) => a.name.includes("yes"))?.action ||
-        defaultAction
-      );
-    }
-
-    if (key.includes("cor")) {
-      return (
-        actions.find((a) => a.name.includes("yes"))?.action ||
-        defaultAction
-      );
-    }
-
-    return (
-      actions.find((a) => a.name.includes("dance"))?.action ||
-      defaultAction
-    );
+    return findActionByClipName(label);
   }
 
   setStatus("Cargando jugador…");
@@ -475,39 +451,13 @@ if (!canvas || !stage) {
     requestAnimationFrame(animate);
 
     const dt = Math.min(clock.getDelta(), 0.05);
-    const t = clock.elapsedTime;
 
-    if (mixer) mixer.update(dt);
+    if (mixer) {
+      mixer.update(dt);
+    }
 
-    const cfg = getViewConfig();
-    const bob = Math.sin(t * 1.65) * (currentFacing === "user" ? 0.022 : 0.012);
-
-    world.position.set(restPose.x, restPose.y + bob, 0);
-
-    if (modelReady) {
-      modelRoot.rotation.set(0, Math.sin(t * 0.65) * 0.05, 0);
-
-      const baseScale = cfg.scale;
-      modelRoot.scale.set(baseScale, baseScale, baseScale);
-
-      if (performance.now() < emoteEndAt) {
-        if (activeEmote === "Celebración") {
-          world.position.y = restPose.y + Math.abs(Math.sin(t * 3.8)) * 0.10;
-        } else if (activeEmote === "Sonrisa") {
-          modelRoot.rotation.y += Math.sin(t * 2.3) * 0.10;
-        } else if (activeEmote === "Energía") {
-          const pulse = 1 + Math.sin(t * 7.2) * 0.035;
-          modelRoot.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
-        } else if (activeEmote === "Corazón") {
-          modelRoot.rotation.y += Math.sin(t * 2.0) * 0.10;
-          modelRoot.rotation.z = Math.sin(t * 2.0) * 0.03;
-        } else {
-          modelRoot.rotation.z = 0;
-        }
-      } else {
-        activeEmote = "";
-        modelRoot.rotation.z = 0;
-      }
+    if (modelReady && emoteEndAt > 0 && performance.now() >= emoteEndAt) {
+      returnToStaticPose();
     }
 
     renderer.render(scene, camera);
@@ -536,23 +486,24 @@ if (!canvas || !stage) {
         setStatus("Jugador listo · cámara trasera");
       }
     },
-    playEmote(label) {
-      activeEmote = label || "";
-      emoteEndAt = performance.now() + 1800;
+    playEmote(clipName) {
+      activeEmote = clipName || "";
 
-      const action = findActionByLabel(label || "");
-      if (action) {
-        playAction(action, action !== defaultAction);
-      }
+      const action = findActionByClipName(clipName || "");
+      if (!action) return;
+
+      stopAllActions();
+
+      const durationMs = Math.max(
+        1200,
+        Math.round(((action.getClip?.().duration || 1.5) * 1000) + 100)
+      );
+
+      emoteEndAt = performance.now() + durationMs;
+      playAction(action, true);
     },
     resetEmote() {
-      activeEmote = "";
-      emoteEndAt = 0;
-      modelRoot.rotation.set(0, 0, 0);
-
-      if (defaultAction) {
-        playAction(defaultAction, false);
-      }
+      returnToStaticPose();
     }
   };
 }

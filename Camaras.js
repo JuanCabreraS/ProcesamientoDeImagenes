@@ -469,6 +469,7 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       this.mixer = null;
       this.actions = [];
       this.activeAction = null;
+      this.returnTimer = null;
 
       this.el.addEventListener("model-loaded", () => {
         this.model = this.el.getObject3D("mesh");
@@ -487,6 +488,7 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
 
         this.setupAnimations();
         this.setTeam(this.data.teamId);
+        this.stopAllActions();
       });
     },
 
@@ -507,28 +509,26 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
         name: (clip.name || "").toLowerCase(),
         action: this.mixer.clipAction(clip)
       }));
-
-      const idle =
-        this.findAction("dance") ||
-        this.findAction("loop") ||
-        this.findAction("idle") ||
-        this.actions[0]?.action ||
-        null;
-
-      if (idle) {
-        idle.reset();
-        idle.enabled = true;
-        idle.setLoop(THREE.LoopRepeat, Infinity);
-        idle.play();
-        this.activeAction = idle;
-      }
     },
 
     findAction(keyword) {
+      const key = (keyword || "").toLowerCase();
       const found = this.actions.find((item) =>
-        item.name.includes((keyword || "").toLowerCase())
+        item.name === key || item.name.includes(key)
       );
       return found?.action || null;
+    },
+
+    stopAllActions() {
+      clearTimeout(this.returnTimer);
+
+      this.actions.forEach(({ action }) => {
+        action.stop();
+        action.reset();
+        action.enabled = false;
+      });
+
+      this.activeAction = null;
     },
 
     setTeam(teamId) {
@@ -546,56 +546,30 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       });
     },
 
-    playClip(clipName = "Victory") {
+    playClip(clipName) {
       if (!this.mixer || !this.actions.length) return;
 
-      const key = (clipName || "").toLowerCase();
-
-      let nextAction =
-        this.findAction(key) ||
-        this.findAction("victory") ||
-        this.findAction("yes") ||
-        this.findAction("dance");
-
+      const nextAction = this.findAction(clipName);
       if (!nextAction) return;
 
-      this.actions.forEach(({ action }) => {
-        if (action !== nextAction) action.fadeOut(0.15);
-      });
+      this.stopAllActions();
 
       nextAction.reset();
       nextAction.enabled = true;
-
-      const isLoop = key.includes("dance") || key.includes("loop");
-
-      if (isLoop) {
-        nextAction.setLoop(THREE.LoopRepeat, Infinity);
-        nextAction.clampWhenFinished = false;
-      } else {
-        nextAction.setLoop(THREE.LoopOnce, 1);
-        nextAction.clampWhenFinished = true;
-      }
-
-      nextAction.fadeIn(0.15);
+      nextAction.setLoop(THREE.LoopOnce, 1);
+      nextAction.clampWhenFinished = true;
       nextAction.play();
+
       this.activeAction = nextAction;
 
-      if (!isLoop) {
-        setTimeout(() => {
-          const idle =
-            this.findAction("dance") ||
-            this.findAction("loop") ||
-            this.findAction("idle");
+      const durationMs = Math.max(
+        1200,
+        Math.round(((nextAction.getClip?.().duration || 1.5) * 1000) + 100)
+      );
 
-          if (idle && idle !== nextAction) {
-            nextAction.fadeOut(0.15);
-            idle.reset();
-            idle.fadeIn(0.15);
-            idle.play();
-            this.activeAction = idle;
-          }
-        }, 1400);
-      }
+      this.returnTimer = setTimeout(() => {
+        this.stopAllActions();
+      }, durationMs);
     }
   });
 }
@@ -680,7 +654,9 @@ function setupLegacyQRPage(video) {
 function setupMarkerLandingPage(markerScene) {
   const scanBtn = document.getElementById("scanBtn");
   const switchBtn = document.getElementById("switchQrCamBtn");
-  const playArAnimBtn = document.getElementById("playArAnimBtn");
+  const animDanceBtn = document.getElementById("animDanceBtn");
+  const animVictoryBtn = document.getElementById("animVictoryBtn");
+  const animYesBtn = document.getElementById("animYesBtn");
 
   const statusEl = document.getElementById("qrStatus");
   const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
@@ -815,7 +791,9 @@ function setupMarkerLandingPage(markerScene) {
 
         saveSelectedTeam(teamId);
         unlockTrivia();
-        playArAnimBtn?.removeAttribute("disabled");
+        animDanceBtn?.removeAttribute("disabled");
+        animVictoryBtn?.removeAttribute("disabled");
+        animYesBtn?.removeAttribute("disabled");
 
         const label = TEAM_CONFIG[teamId]?.label || teamId;
         setStatus(`Jugador detectado: ${label}. Ya puedes continuar a la trivia.`);
@@ -844,7 +822,9 @@ function setupMarkerLandingPage(markerScene) {
   }
 
   switchBtn?.setAttribute("disabled", "disabled");
-  playArAnimBtn?.setAttribute("disabled", "disabled");
+  animDanceBtn?.setAttribute("disabled", "disabled");
+  animVictoryBtn?.setAttribute("disabled", "disabled");
+  animYesBtn?.setAttribute("disabled", "disabled");
 
   if (sessionStorage.getItem("markerUnlocked") === "1") {
     unlockTrivia();
@@ -884,12 +864,22 @@ function setupMarkerLandingPage(markerScene) {
     setStatus("No se pudo iniciar AR. Verifica permisos de cámara y HTTPS.");
   });
 
-  playArAnimBtn?.addEventListener("click", () => {
+  animDanceBtn?.addEventListener("click", () => {
     const controller = activeMarkerModelEl?.components?.["team-model-controller"];
     if (!controller) return;
+    controller.playClip("Dance_Loop");
+  });
 
-    const teamId = readSelectedTeam();
-    controller.playClip(TEAM_CONFIG[teamId]?.defaultAnimation || "Victory");
+  animVictoryBtn?.addEventListener("click", () => {
+    const controller = activeMarkerModelEl?.components?.["team-model-controller"];
+    if (!controller) return;
+    controller.playClip("Victory");
+  });
+
+  animYesBtn?.addEventListener("click", () => {
+    const controller = activeMarkerModelEl?.components?.["team-model-controller"];
+    if (!controller) return;
+    controller.playClip("Yes");
   });
 
   scanBtn?.addEventListener("click", () => {
@@ -1357,18 +1347,18 @@ function setupPhotoPage() {
       return;
     }
 
-    const label = button.dataset.label || "Emote";
+    const animName = button.dataset.anim || "";
+    const label = button.dataset.label || animName || "Animación";
     const emoji = button.dataset.emoji || "⚽";
-    const svg = button.querySelector("svg");
 
-    activeEmote = { label, emoji };
+    activeEmote = { label, emoji, animName };
 
     clearEmoteUI();
     button.classList.add("is-active");
     button.setAttribute("aria-pressed", "true");
 
     if (emotePill && emotePillIcon && emotePillText) {
-      emotePillIcon.innerHTML = svg ? svg.outerHTML : "";
+      emotePillIcon.textContent = emoji;
       emotePillText.textContent = label;
       emotePill.classList.add("is-visible");
       emotePill.setAttribute("aria-hidden", "false");
@@ -1381,7 +1371,7 @@ function setupPhotoPage() {
       emoteSticker.setAttribute("aria-hidden", "false");
     }
 
-    window.ARPhoto?.playEmote?.(label);
+    window.ARPhoto?.playEmote?.(animName);
   }
 
   async function startPreview(facingMode = "user") {
