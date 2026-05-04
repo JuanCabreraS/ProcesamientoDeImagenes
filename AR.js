@@ -229,22 +229,26 @@ if (!canvas || !stage) {
   function getViewConfig() {
     if (currentFacing === "user") {
       return {
-        x: isPortrait ? 0.10 : 0.16,
-        y: isPortrait ? 0.02 : 0.00,
-        scale: isPortrait ? 0.34 : 0.32,
-        distanceFactor: isPortrait ? 3.70 : 3.85,
-        distanceOffset: isPortrait ? 4.10 : 4.30,
-        lookOffsetX: isPortrait ? -0.03 : -0.02
+        x: isPortrait ? 0.06 : 0.10,
+        y: isPortrait ? 0.00 : 0.00,
+        scale: isPortrait ? 0.26 : 0.24,
+        distanceFactor: isPortrait ? 4.20 : 4.35,
+        distanceOffset: isPortrait ? 4.80 : 5.00,
+        lookOffsetX: isPortrait ? -0.02 : -0.02,
+        eyeHeight: isPortrait ? 0.88 : 0.88,
+        lookHeight: isPortrait ? 0.42 : 0.42
       };
     }
 
     return {
       x: 0,
-      y: isPortrait ? 0.34 : 0.18,
-      scale: isPortrait ? 0.26 : 0.24,
-      distanceFactor: isPortrait ? 4.35 : 4.50,
-      distanceOffset: isPortrait ? 4.90 : 5.10,
-      lookOffsetX: 0
+      y: isPortrait ? 0.08 : 0.04,
+      scale: isPortrait ? 0.20 : 0.18,
+      distanceFactor: isPortrait ? 5.10 : 5.20,
+      distanceOffset: isPortrait ? 6.00 : 6.20,
+      lookOffsetX: 0,
+      eyeHeight: isPortrait ? 0.96 : 0.94,
+      lookHeight: isPortrait ? 0.42 : 0.42
     };
   }
 
@@ -264,13 +268,13 @@ if (!canvas || !stage) {
 
     camera.position.set(
       cfg.x,
-      cfg.y + scaledH * (currentFacing === "user" ? 0.78 : 0.82),
+      cfg.y + scaledH * cfg.eyeHeight,
       dist + cfg.distanceOffset
     );
 
     camera.lookAt(
       cfg.x + cfg.lookOffsetX,
-      cfg.y + scaledH * (currentFacing === "user" ? 0.46 : 0.54),
+      cfg.y + scaledH * cfg.lookHeight,
       0
     );
 
@@ -315,7 +319,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 1.05;
+    const targetHeight = 0.88;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
