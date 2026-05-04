@@ -230,7 +230,7 @@ if (!canvas || !stage) {
     if (currentFacing === "user") {
       return {
         x: isPortrait ? 0.02 : 0.05,
-        y: isPortrait ? -0.85 : -0.54,
+        y: isPortrait ? -1.55 : -0.96,
         scale: isPortrait ? 0.16 : 0.15,
         distanceFactor: isPortrait ? 5.00 : 5.10,
         distanceOffset: isPortrait ? 6.20 : 6.40,
@@ -242,7 +242,7 @@ if (!canvas || !stage) {
 
     return {
       x: 0,
-      y: isPortrait ? -1.20 : -0.76,
+      y: isPortrait ? -2.20 : -1.36,
       scale: isPortrait ? 0.13 : 0.12,
       distanceFactor: isPortrait ? 5.90 : 6.00,
       distanceOffset: isPortrait ? 7.40 : 7.70,
