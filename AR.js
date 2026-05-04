@@ -229,26 +229,26 @@ if (!canvas || !stage) {
   function getViewConfig() {
     if (currentFacing === "user") {
       return {
-        x: isPortrait ? 0.02 : 0.05,
-        y: isPortrait ? -1.55 : -0.96,
-        scale: isPortrait ? 0.16 : 0.15,
-        distanceFactor: isPortrait ? 5.00 : 5.10,
-        distanceOffset: isPortrait ? 6.20 : 6.40,
-        lookOffsetX: isPortrait ? -0.01 : -0.01,
-        eyeHeight: isPortrait ? 0.80 : 0.80,
-        lookHeight: isPortrait ? 0.22 : 0.22
+        x: isPortrait ? 0.04 : 0.08,
+        y: isPortrait ? -1.20 : -0.80,
+        scale: isPortrait ? 0.22 : 0.20,
+        distanceFactor: isPortrait ? 4.55 : 4.65,
+        distanceOffset: isPortrait ? 5.40 : 5.60,
+        lookOffsetX: -0.01,
+        eyeHeight: 0.84,
+        lookHeight: 0.30
       };
     }
 
     return {
       x: 0,
-      y: isPortrait ? -2.20 : -1.36,
-      scale: isPortrait ? 0.13 : 0.12,
-      distanceFactor: isPortrait ? 5.90 : 6.00,
-      distanceOffset: isPortrait ? 7.40 : 7.70,
+      y: isPortrait ? -1.60 : -1.00,
+      scale: isPortrait ? 0.17 : 0.16,
+      distanceFactor: isPortrait ? 5.60 : 5.70,
+      distanceOffset: isPortrait ? 6.80 : 7.00,
       lookOffsetX: 0,
-      eyeHeight: isPortrait ? 0.82 : 0.82,
-      lookHeight: isPortrait ? 0.16 : 0.16
+      eyeHeight: 0.86,
+      lookHeight: 0.42
     };
   }
 
@@ -268,13 +268,13 @@ if (!canvas || !stage) {
 
     camera.position.set(
       cfg.x,
-      scaledH * cfg.eyeHeight,
+      cfg.y + scaledH * cfg.eyeHeight,
       dist + cfg.distanceOffset
     );
 
     camera.lookAt(
       cfg.x + cfg.lookOffsetX,
-      scaledH * cfg.lookHeight,
+      cfg.y + scaledH * cfg.lookHeight,
       0
     );
 
