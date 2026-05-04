@@ -6,175 +6,9 @@ function setupHomeButtons() {
   });
 }
 
-const TRIVIA_PLAYERS = [
-  {
-    id: "messi",
-    name: "Lionel Messi",
-    shortName: "Messi",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿En qué País nació Lionel Messi?",
-        options: ["Japón", "Rusia", "Argentina", "Francia"],
-        correctIndex: 2
-      },
-      {
-        text: "¿Cuál es el número del jersey de Lionel Messi?",
-        options: ["10", "33", "28", "16"],
-        correctIndex: 0
-      }
-    ]
-  },
-  {
-    id: "dimaria",
-    name: "Ángel Di María",
-    shortName: "Ángel Di María",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "Además de Rosario Central, ¿en cuántos equipos jugó Di María?",
-        options: ["4", "5", "6", "7"],
-        correctIndex: 1
-      },
-      {
-        text: "¿Contra qué equipo debutó Di María en Central?",
-        options: ["Quilmes", "Talleres", "Independiente", "River Plate"],
-        correctIndex: 2
-      }
-    ]
-  },
-  {
-    id: "julian",
-    name: "Julián Álvarez",
-    shortName: "Julián Álvarez",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿Cuándo nació Julián Álvarez?",
-        options: [
-          "29 de enero del 2000",
-          "31 de enero del 2000",
-          "4 de marzo del 1999",
-          "9 de enero del 2000"
-        ],
-        correctIndex: 1
-      },
-      {
-        text: "¿En qué equipo juega actualmente?",
-        options: ["River Plate", "Manchester City", "Boca Junior", "Real Madrid"],
-        correctIndex: 1
-      }
-    ]
-  },
-  {
-    id: "mbappe",
-    name: "Kylian Mbappé",
-    shortName: "Kylian Mbappé",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿Qué posición juega Mbappé?",
-        options: ["Delantero", "Medio campo", "Lateral", "Portero"],
-        correctIndex: 0
-      },
-      {
-        text: "¿Dónde nació Mbappé?",
-        options: ["Yaounde", "Marseille", "Macon", "Paris"],
-        correctIndex: 3
-      }
-    ]
-  },
-  {
-    id: "giroud",
-    name: "Olivier Giroud",
-    shortName: "Olivier Giroud",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿Cuándo inicio su carrera profesional?",
-        options: ["2004", "2005", "2006", "2007"],
-        correctIndex: 1
-      },
-      {
-        text: "¿Cuánto mide Olivier Giroud?",
-        options: ["1.90 m", "1.92 m", "1.94 m", "1.96 m"],
-        correctIndex: 1
-      }
-    ]
-  },
-  {
-    id: "neymar",
-    name: "Neymar JR",
-    shortName: "Neymar JR",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿En qué club brasileño comenzó Neymar su carrera profesional?",
-        options: ["Flamengo", "Santos", "Fluminense", "Palmeiras"],
-        correctIndex: 1
-      },
-      {
-        text: "¿Cuántos goles ha marcado en Champions Neymar hasta la fecha?",
-        options: ["23", "33", "43", "53"],
-        correctIndex: 2
-      }
-    ]
-  },
-  {
-    id: "vinicius",
-    name: "Vinicius JR",
-    shortName: "Vinicius JR",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿Cuántos años tiene?",
-        options: ["22", "25", "24", "28"],
-        correctIndex: 2
-      },
-      {
-        text: "¿En qué equipo inicio su carrera?",
-        options: ["Vasco", "Sao Paulo", "Flamengo", "Real Madrid"],
-        correctIndex: 2
-      }
-    ]
-  },
-  {
-    id: "amrabat",
-    name: "Sofyan Amrabat",
-    shortName: "Sofyan Amrabat",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿En qué posición juega Amrabat?",
-        options: ["Centrocampista", "Portero", "Delantero", "Lateral"],
-        correctIndex: 0
-      },
-      {
-        text: "¿Con que club inglés gano la FA Cup en 2023/2024?",
-        options: ["Liver", "Sunderland", "Manchester United", "Manchester City"],
-        correctIndex: 2
-      }
-    ]
-  },
-  {
-    id: "hakimi",
-    name: "Achraf Hakimi",
-    shortName: "Achraf Hakimi",
-    meta: "Jugador desbloqueado",
-    questions: [
-      {
-        text: "¿Dónde nació Achraf Hakimi?",
-        options: ["Marruecos", "Emiratos Árabes Unidos", "España", "Portugal"],
-        correctIndex: 2
-      },
-      {
-        text: "¿Con que club jugó antes de unirse al PSG?",
-        options: ["Inter de Milán", "Wydad", "Raja Casablanca", "RSB Berkane"],
-        correctIndex: 0
-      }
-    ]
-  }
-];
+let TRIVIA_PLAYERS = [];
+let TRIVIA_PLAYERS_BY_TEAM = {};
+let triviaLoadPromise = null;
 
 const PLAYER_PROFILES = {
   messi: {
@@ -294,13 +128,6 @@ function readSelectedTriviaPlayer() {
   }
 }
 
-function pickRandomTriviaPlayer() {
-  const randomIndex = Math.floor(Math.random() * TRIVIA_PLAYERS.length);
-  const player = JSON.parse(JSON.stringify(TRIVIA_PLAYERS[randomIndex]));
-  saveSelectedTriviaPlayer(player);
-  return player;
-}
-
 function clearTriviaResult() {
   sessionStorage.removeItem("triviaResult");
 }
@@ -363,6 +190,240 @@ const TEAM_CONFIG = Object.fromEntries(
     }
   ])
 );
+
+const TEAM_NAME_TO_ID = {
+  "Canada": "canada",
+  "EE. UU.": "estados_unidos",
+  "México": "mexico",
+  "Alemania": "alemania",
+  "Arabia Saudí": "arabia_saudita",
+  "Argelia": "argelia",
+  "Argentina": "argentina",
+  "Australia": "australia",
+  "Bélgica": "belgica",
+  "Brasil": "brasil",
+  "Catar": "catar",
+  "Colombia": "colombia",
+  "Costa de Marfil": "costa_de_marfil",
+  "Croacia": "croacia",
+  "Curazao": "curacao",
+  "Ecuador": "ecuador",
+  "Egipto": "egipto",
+  "Escocia": "escocia",
+  "España": "espana",
+  "Francia": "francia",
+  "Ghana": "ghana",
+  "Haití": "haiti",
+  "Inglaterra": "inglaterra",
+  "RI de Irán": "iran",
+  "Islas de Cabo Verde": "islas_del_cabo_verde",
+  "Japón": "japon",
+  "Jordania": "jordania",
+  "Marruecos": "marruecos",
+  "Noruega": "noruega",
+  "Nueva Zelanda": "nueva_zelanda",
+  "Países Bajos": "paises_bajos",
+  "Panamá": "panama",
+  "Paraguay": "paraguay",
+  "Portugal": "portugal",
+  "República de Corea": "korea",
+  "Senegal": "senegal",
+  "Sudáfrica": "sudafrica",
+  "Suiza": "suiza",
+  "Túnez": "tunez",
+  "Uruguay": "uruguay",
+  "Uzbekistán": "uzbekistan"
+};
+
+function normalizePlayerId(name) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function buildSecondQuestion(playerName, teamId) {
+  const correctLabel = TEAM_CONFIG[teamId]?.label || teamId;
+  const allLabels = TEAM_LIST
+    .map((team) => team.label)
+    .filter((label) => label !== correctLabel);
+
+  const seed = Array.from(playerName).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
+  const distractors = [];
+  let step = 0;
+
+  while (distractors.length < 3 && step < allLabels.length * 2) {
+    const candidate = allLabels[(seed + step * 7) % allLabels.length];
+    if (!distractors.includes(candidate) && candidate !== correctLabel) {
+      distractors.push(candidate);
+    }
+    step += 1;
+  }
+
+  const correctIndex = seed % 4;
+  const options = [...distractors];
+  options.splice(correctIndex, 0, correctLabel);
+
+  return {
+    text: `¿Qué selección representa ${playerName}?`,
+    options,
+    correctIndex
+  };
+}
+
+function parseTriviaTxt(rawText) {
+  const sections = rawText
+    .split(/\n(?=\*)/)
+    .map((section) => section.trim())
+    .filter(Boolean);
+
+  const players = [];
+
+  sections.forEach((section) => {
+    const lines = section
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const header = lines.shift();
+    if (!header) return;
+
+    const teamName = header.replace(/^\*/, "").replace(/:$/, "").trim();
+    const teamId = TEAM_NAME_TO_ID[teamName];
+    if (!teamId) return;
+
+    let i = 0;
+
+    while (i < lines.length) {
+      const name = lines[i++];
+      if (!name || name.startsWith("¿") || name.startsWith("Opciones")) continue;
+
+      const text = lines[i++] || "";
+
+      if (lines[i] === "Opciones:" || lines[i] === "Opciones") {
+        i += 1;
+      }
+
+      const options = [];
+      let correctIndex = 0;
+
+      while (i < lines.length && /^[A-D]\)/.test(lines[i])) {
+        const rawOption = lines[i++];
+        const isCorrect = rawOption.includes("✅");
+
+        const optionText = rawOption
+          .replace(/^[A-D]\)\s*/, "")
+          .replace("✅", "")
+          .trim();
+
+        options.push(optionText);
+
+        if (isCorrect) {
+          correctIndex = options.length - 1;
+        }
+      }
+
+      players.push({
+        id: normalizePlayerId(name),
+        teamId,
+        name,
+        shortName: name,
+        meta: TEAM_CONFIG[teamId]?.label || teamName,
+        questions: [
+          {
+            text,
+            options,
+            correctIndex
+          },
+          buildSecondQuestion(name, teamId)
+        ]
+      });
+    }
+  });
+
+  TRIVIA_PLAYERS = players;
+
+  TRIVIA_PLAYERS_BY_TEAM = players.reduce((acc, player) => {
+    if (!acc[player.teamId]) {
+      acc[player.teamId] = [];
+    }
+    acc[player.teamId].push(player);
+    return acc;
+  }, {});
+}
+
+async function ensureTriviaLoaded() {
+  if (TRIVIA_PLAYERS.length) return;
+  if (triviaLoadPromise) return triviaLoadPromise;
+
+  triviaLoadPromise = fetch("PREGUNTAS.txt?v=2")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("No se pudo cargar PREGUNTAS.txt");
+      }
+      return response.text();
+    })
+    .then((text) => {
+      parseTriviaTxt(text);
+    })
+    .catch((error) => {
+      console.error("Error cargando trivia:", error);
+      TRIVIA_PLAYERS = [];
+      TRIVIA_PLAYERS_BY_TEAM = {};
+    });
+
+  return triviaLoadPromise;
+}
+
+async function pickRandomTriviaPlayer() {
+  await ensureTriviaLoaded();
+
+  const randomIndex = Math.floor(Math.random() * TRIVIA_PLAYERS.length);
+  const player = JSON.parse(JSON.stringify(TRIVIA_PLAYERS[randomIndex]));
+  saveSelectedTriviaPlayer(player);
+  return player;
+}
+
+async function pickTriviaPlayerForTeam(teamId) {
+  await ensureTriviaLoaded();
+
+  const pool = TRIVIA_PLAYERS_BY_TEAM[teamId] || [];
+  if (!pool.length) {
+    return pickRandomTriviaPlayer();
+  }
+
+  const randomIndex = Math.floor(Math.random() * pool.length);
+  const player = JSON.parse(JSON.stringify(pool[randomIndex]));
+  saveSelectedTriviaPlayer(player);
+  return player;
+}
+
+function buildFallbackProfile(currentPlayer) {
+  const teamLabel =
+    TEAM_CONFIG[currentPlayer.teamId]?.label ||
+    currentPlayer.meta ||
+    "Selección";
+
+  return {
+    jersey: "--",
+    meta: `${teamLabel} • Jugador`,
+    rating: 80,
+    stats: {
+      goals: 0,
+      assists: 0,
+      matches: 0,
+      trophies: 0
+    },
+    facts: [
+      `${currentPlayer.name} pertenece a la selección de ${teamLabel}.`,
+      "Las curiosidades específicas de este jugador se pueden completar después.",
+      "Las estadísticas detalladas de este jugador se pueden completar después."
+    ]
+  };
+}
 
 const arIndexTextureCache = new Map();
 
@@ -626,7 +687,8 @@ function setupLegacyQRPage(video) {
 
   startPreview();
 
-  scanBtn?.addEventListener("click", () => {
+  scanBtn?.addEventListener("click", async () => {
+    await pickRandomTriviaPlayer();
     window.location.href = encodeURI("Pantalla Trivia.html");
   });
 
@@ -882,13 +944,13 @@ function setupMarkerLandingPage(markerScene) {
     controller.playClip("Yes");
   });
 
-  scanBtn?.addEventListener("click", () => {
+  scanBtn?.addEventListener("click", async () => {
     if (!unlocked) {
       alert("Primero detecta el marcador para desbloquear la trivia.");
       return;
     }
 
-    pickRandomTriviaPlayer();
+    await pickTriviaPlayerForTeam(readSelectedTeam());
     clearTriviaResult();
     window.location.href = encodeURI("Pantalla Trivia.html");
   });
@@ -906,7 +968,7 @@ function setupMarkerLandingPage(markerScene) {
   bgVideo?.addEventListener("suspend", forcePreviewRecovery);
 }
 
-function setupTriviaPage() {
+async function setupTriviaPage() {
   const confirmBtn = document.querySelector(".confirm");
   const answers = Array.from(document.querySelectorAll(".answer"));
   const scoreNumber = document.querySelector(".score-number");
@@ -928,7 +990,11 @@ function setupTriviaPage() {
     return;
   }
 
-  const currentPlayer = readSelectedTriviaPlayer() || pickRandomTriviaPlayer();
+  await ensureTriviaLoaded();
+
+  const currentPlayer =
+    readSelectedTriviaPlayer() || await pickRandomTriviaPlayer();
+
   const questions = currentPlayer.questions || [];
 
   let currentQuestionIndex = 0;
@@ -1045,7 +1111,9 @@ function setupTriviaPage() {
 
 function setupPlayerPage() {
   const currentPlayer = readSelectedTriviaPlayer();
-  const profile = currentPlayer ? PLAYER_PROFILES[currentPlayer.id] : null;
+  const profile = currentPlayer
+  ? (PLAYER_PROFILES[currentPlayer.id] || buildFallbackProfile(currentPlayer))
+  : null;
 
   const playerNameEl = document.querySelector(".player-name");
   const playerMetaEl = document.querySelector(".player-meta");

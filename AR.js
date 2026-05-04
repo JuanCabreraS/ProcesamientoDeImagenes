@@ -229,21 +229,21 @@ if (!canvas || !stage) {
   function getViewConfig() {
     if (currentFacing === "user") {
       return {
-        x: isPortrait ? 0.58 : 0.72,
-        y: isPortrait ? -2.55 : -1.12,
-        scale: isPortrait ? 0.90 : 0.86,
-        distanceFactor: isPortrait ? 2.20 : 2.30,
-        distanceOffset: isPortrait ? 1.55 : 1.70,
-        lookOffsetX: isPortrait ? -0.08 : -0.06
+        x: isPortrait ? 0.18 : 0.26,
+        y: isPortrait ? -0.10 : -0.04,
+        scale: isPortrait ? 0.46 : 0.42,
+        distanceFactor: isPortrait ? 3.15 : 3.25,
+        distanceOffset: isPortrait ? 3.70 : 3.90,
+        lookOffsetX: isPortrait ? -0.04 : -0.03
       };
     }
 
     return {
       x: 0,
-      y: isPortrait ? -0.95 : -0.35,
-      scale: isPortrait ? 0.30 : 1.98,
-      distanceFactor: isPortrait ? 4.10 : 4.20,
-      distanceOffset: isPortrait ? 4.90 : 5.10,
+      y: isPortrait ? 0.28 : 0.14,
+      scale: isPortrait ? 0.36 : 0.34,
+      distanceFactor: isPortrait ? 3.90 : 4.00,
+      distanceOffset: isPortrait ? 4.30 : 4.50,
       lookOffsetX: 0
     };
   }
@@ -264,19 +264,20 @@ if (!canvas || !stage) {
 
     camera.position.set(
       cfg.x,
-      scaledH * (currentFacing === "user" ? 0.62 : 0.55),
+      cfg.y + scaledH * (currentFacing === "user" ? 0.64 : 0.60),
       dist + cfg.distanceOffset
     );
 
     camera.lookAt(
       cfg.x + cfg.lookOffsetX,
-      scaledH * (currentFacing === "user" ? 0.50 : 0.46),
+      cfg.y + scaledH * (currentFacing === "user" ? 0.42 : 0.52),
       0
     );
 
     camera.updateProjectionMatrix();
 
     shadowPlane.position.x = cfg.x;
+    shadowPlane.position.y = Math.max(0.01, cfg.y * 0.12 + 0.01);
     shadowPlane.scale.set(
       baseShadowX * cfg.scale,
       baseShadowY * cfg.scale,
@@ -314,7 +315,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 1.35;
+    const targetHeight = 1.15;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
