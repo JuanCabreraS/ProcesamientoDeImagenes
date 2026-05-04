@@ -241,9 +241,9 @@ function buildStatsForPlayer(playerId, position, rating, name) {
 
 function buildFactsForPlayer(player, teamLabel, position) {
   return [
-    `${player.name} representa a ${teamLabel} en esta experiencia.`,
-    `Su rol principal en la app es ${position.toLowerCase()}.`,
-    `Escanea el escudo de ${teamLabel} para desbloquear su trivia y ficha.`
+    `${player.name} representa a ${teamLabel} en el mundial.`,
+    `Su posicion es ${position.toLowerCase()}.`,
+    `El escudo de ${teamLabel} representa su equipo y nacionalidad.`
   ];
 }
 
