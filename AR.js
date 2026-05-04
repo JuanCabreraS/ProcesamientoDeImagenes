@@ -242,7 +242,7 @@ if (!canvas || !stage) {
 
     return {
       x: 0,
-      y: isPortrait ? -1.60 : -1.00,
+      y: isPortrait ? 0.80 : -1.10,
       scale: isPortrait ? 0.17 : 0.16,
       distanceFactor: isPortrait ? 5.60 : 5.70,
       distanceOffset: isPortrait ? 6.80 : 7.00,
