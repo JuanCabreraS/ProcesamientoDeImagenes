@@ -24,6 +24,7 @@
   <main class="ar-stage" aria-label="Pantalla para tomar foto">
     <video id="photoVideo" class="camera-video" autoplay playsinline muted></video>
     <canvas id="arCanvas" class="ar-canvas" aria-hidden="true"></canvas>
+    <canvas id="fxCanvas" class="ar-canvas" aria-hidden="true"></canvas>
     <canvas id="photoCanvas" class="hidden-canvas" aria-hidden="true"></canvas>
 
     <header class="topbar topbar--floating">
@@ -74,6 +75,7 @@
     <section class="capture-panel capture-panel--floating" aria-label="Panel de captura">
       <div class="capture-row">
         <button id="switchCamBtn" class="switchcam-btn" type="button">Cambiar cámara</button>
+        <button id="photoConfettiBtn" class="switchcam-btn" type="button">Confeti</button>
       </div>
 
       <button id="shutterBtn" class="shutter" type="button" aria-label="Tomar foto">

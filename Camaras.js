@@ -6,6 +6,90 @@ function setupHomeButtons() {
   });
 }
 
+let confettiStylesInjected = false;
+
+function ensureConfettiStyles() {
+  if (confettiStylesInjected) return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes fifaConfettiFall {
+      0% {
+        transform: translate3d(0, -12px, 0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift, 0px), 105vh, 0) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .fifa-confetti-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+
+    .fifa-confetti-piece {
+      position: absolute;
+      top: -16px;
+      width: 10px;
+      height: 16px;
+      border-radius: 2px;
+      animation-name: fifaConfettiFall;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+      will-change: transform, opacity;
+    }
+  `;
+  document.head.appendChild(style);
+  confettiStylesInjected = true;
+}
+
+function launchConfetti(container = document.body, count = 36) {
+  if (!container) return;
+
+  ensureConfettiStyles();
+
+  const computed = window.getComputedStyle(container);
+  if (computed.position === "static") {
+    container.style.position = "relative";
+  }
+
+  const layer = document.createElement("div");
+  layer.className = "fifa-confetti-layer";
+
+  const colors = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#ffffff", "#fde047"];
+
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement("span");
+    piece.className = "fifa-confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.opacity = "1";
+    piece.style.setProperty("--drift", `${(Math.random() - 0.5) * 180}px`);
+    piece.style.animationDuration = `${1.6 + Math.random() * 1.3}s`;
+    piece.style.animationDelay = `${Math.random() * 0.18}s`;
+    piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+
+    if (Math.random() > 0.5) {
+      piece.style.width = "8px";
+      piece.style.height = "8px";
+      piece.style.borderRadius = "999px";
+    }
+
+    layer.appendChild(piece);
+  }
+
+  container.appendChild(layer);
+
+  setTimeout(() => {
+    layer.remove();
+  }, 2600);
+}
+
 let TRIVIA_PLAYERS = [];
 let TRIVIA_PLAYERS_BY_TEAM = {};
 let triviaLoadPromise = null;
@@ -704,6 +788,11 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       this.activeAction = null;
       this.returnTimer = null;
 
+      this.spinActive = false;
+      this.spinStart = 0;
+      this.spinDuration = 1400;
+      this.spinFrom = 0;
+
       this.el.addEventListener("model-loaded", () => {
         this.model = this.el.getObject3D("mesh");
         if (!this.model) return;
@@ -728,6 +817,18 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
     tick(time, delta) {
       if (this.mixer) {
         this.mixer.update(delta / 1000);
+      }
+
+      if (this.spinActive && this.model) {
+        const progress = Math.min((time - this.spinStart) / this.spinDuration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        this.model.rotation.y = this.spinFrom + (Math.PI * 2 * eased);
+
+        if (progress >= 1) {
+          this.spinActive = false;
+          this.model.rotation.y = 0;
+        }
       }
     },
 
@@ -803,7 +904,16 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       this.returnTimer = setTimeout(() => {
         this.stopAllActions();
       }, durationMs);
-    }
+    },
+
+    rotate360(durationMs = 1400) {
+      if (!this.model) return;
+
+      this.spinActive = true;
+      this.spinStart = performance.now();
+      this.spinDuration = durationMs;
+      this.spinFrom = this.model.rotation.y || 0;
+    },
   });
 }
 
@@ -891,6 +1001,8 @@ function setupMarkerLandingPage(markerScene) {
   const animDanceBtn = document.getElementById("animDanceBtn");
   const animVictoryBtn = document.getElementById("animVictoryBtn");
   const animYesBtn = document.getElementById("animYesBtn");
+  const rotate360Btn = document.getElementById("rotate360Btn");
+  const confettiBtn = document.getElementById("confettiBtn");
 
   const statusEl = document.getElementById("qrStatus");
   const frame = document.getElementById("markerFrame") || document.querySelector(".scan-frame");
@@ -1028,6 +1140,8 @@ function setupMarkerLandingPage(markerScene) {
         animDanceBtn?.removeAttribute("disabled");
         animVictoryBtn?.removeAttribute("disabled");
         animYesBtn?.removeAttribute("disabled");
+        rotate360Btn?.removeAttribute("disabled");
+        confettiBtn?.removeAttribute("disabled");
 
         const label = TEAM_CONFIG[teamId]?.label || teamId;
         setStatus(`Jugador detectado: ${label}. Ya puedes continuar a la trivia.`);
@@ -1059,6 +1173,8 @@ function setupMarkerLandingPage(markerScene) {
   animDanceBtn?.setAttribute("disabled", "disabled");
   animVictoryBtn?.setAttribute("disabled", "disabled");
   animYesBtn?.setAttribute("disabled", "disabled");
+  rotate360Btn?.setAttribute("disabled", "disabled");
+  confettiBtn?.setAttribute("disabled", "disabled");
 
   if (sessionStorage.getItem("markerUnlocked") === "1") {
     unlockTrivia();
@@ -1114,6 +1230,22 @@ function setupMarkerLandingPage(markerScene) {
     const controller = activeMarkerModelEl?.components?.["team-model-controller"];
     if (!controller) return;
     controller.playClip("Yes");
+  });
+
+  rotate360Btn?.addEventListener("click", () => {
+    const controller = activeMarkerModelEl?.components?.["team-model-controller"];
+    if (!controller) return;
+
+    controller.rotate360();
+  });
+
+  confettiBtn?.addEventListener("click", () => {
+    const container =
+      document.getElementById("markerFrame") ||
+      document.querySelector(".scan-frame") ||
+      document.body;
+
+    launchConfetti(container, 42);
   });
 
   scanBtn?.addEventListener("click", async () => {
@@ -1511,7 +1643,7 @@ function drawEmoteSticker(ctx, outWidth, outHeight, emote) {
   ctx.restore();
 }
 
-function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options = {}) {
+function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, fxCanvas, options = {}) {
   const { mirror = false, filter = "none", emote = null } = options;
   const rect = stageEl.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1533,6 +1665,10 @@ function takeCompositePhoto(videoEl, outCanvas, stageEl, overlayCanvas, options 
     drawSourceCover(ctx, overlayCanvas, width, height, { mirror, filter });
   }
 
+  if (fxCanvas && fxCanvas.width && fxCanvas.height) {
+    drawSourceCover(ctx, fxCanvas, width, height, { mirror: false, filter: "none" });
+  }
+
   if (emote) {
     drawEmoteSticker(ctx, width, height, emote);
   }
@@ -1546,9 +1682,11 @@ function setupPhotoPage() {
 
   const video = document.getElementById("photoVideo");
   const overlayCanvas = document.getElementById("arCanvas");
+  const fxCanvas = document.getElementById("fxCanvas");
   const outCanvas = document.getElementById("photoCanvas");
   const stage = document.querySelector(".ar-stage");
   const switchBtn = document.getElementById("switchCamBtn");
+  const photoConfettiBtn = document.getElementById("photoConfettiBtn");
   const statusEl = document.getElementById("photoStatus");
   const backBtn = document.getElementById("backBtn");
   const emoteButtons = Array.from(document.querySelectorAll(".emote-btn"));
@@ -1564,6 +1702,10 @@ function setupPhotoPage() {
   let currentFacing = "user";
   let activeEmote = null;
 
+  let confettiPieces = [];
+  let confettiUntil = 0;
+  let confettiRaf = 0;
+
   const setStatus = (text) => {
     if (statusEl) statusEl.textContent = text;
   };
@@ -1571,7 +1713,110 @@ function setupPhotoPage() {
   const stop = () => {
     window.CameraUtils.stopCamera(video);
     setStatus("Cámara detenida");
+
+    if (confettiRaf) {
+      cancelAnimationFrame(confettiRaf);
+      confettiRaf = 0;
+    }
+
+    confettiPieces = [];
+
+    if (fxCanvas) {
+      const ctx = fxCanvas.getContext("2d");
+      ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+    }
   };
+
+  function ensureFxCanvasSize() {
+    if (!fxCanvas || !stage) return false;
+
+    const rect = stage.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const width = Math.max(1, Math.floor(rect.width * dpr));
+    const height = Math.max(1, Math.floor(rect.height * dpr));
+
+    if (fxCanvas.width !== width || fxCanvas.height !== height) {
+      fxCanvas.width = width;
+      fxCanvas.height = height;
+    }
+
+    return true;
+  }
+
+  function buildConfettiPieces(count = 42) {
+    if (!ensureFxCanvasSize()) return [];
+
+    const width = fxCanvas.width;
+    const height = fxCanvas.height;
+    const colors = ["#22c55e", "#f59e0b", "#ef4444", "#3b82f6", "#ffffff", "#fde047"];
+
+    return Array.from({ length: count }, (_, i) => ({
+      x: Math.random() * width,
+      y: -20 - Math.random() * height * 0.25,
+      w: 8 + Math.random() * 10,
+      h: 8 + Math.random() * 14,
+      vx: (-1.5 + Math.random() * 3.0) * (width / 420),
+      vy: (3.0 + Math.random() * 4.5) * (height / 740),
+      rot: Math.random() * Math.PI * 2,
+      vr: -0.18 + Math.random() * 0.36,
+      color: colors[i % colors.length],
+      circle: Math.random() > 0.6
+    }));
+  }
+
+  function drawConfettiFrame(now = performance.now()) {
+    if (!fxCanvas) return;
+
+    ensureFxCanvasSize();
+
+    const ctx = fxCanvas.getContext("2d");
+    ctx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+
+    if (!confettiPieces.length || now >= confettiUntil) {
+      confettiPieces = [];
+      if (confettiRaf) {
+        cancelAnimationFrame(confettiRaf);
+        confettiRaf = 0;
+      }
+      return;
+    }
+
+    confettiPieces.forEach((piece) => {
+      piece.x += piece.vx;
+      piece.y += piece.vy;
+      piece.rot += piece.vr;
+      piece.vy += 0.015;
+
+      ctx.save();
+      ctx.translate(piece.x, piece.y);
+      ctx.rotate(piece.rot);
+      ctx.fillStyle = piece.color;
+
+      if (piece.circle) {
+        ctx.beginPath();
+        ctx.arc(0, 0, piece.w * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-piece.w / 2, -piece.h / 2, piece.w, piece.h);
+      }
+
+      ctx.restore();
+    });
+
+    confettiRaf = requestAnimationFrame(drawConfettiFrame);
+  }
+
+  function launchPhotoConfetti() {
+    confettiPieces = buildConfettiPieces(42);
+    confettiUntil = performance.now() + 2600;
+
+    if (confettiRaf) {
+      cancelAnimationFrame(confettiRaf);
+    }
+
+    confettiRaf = requestAnimationFrame(drawConfettiFrame);
+  }
 
   function clearEmoteUI() {
     emoteButtons.forEach((button) => {
@@ -1671,13 +1916,17 @@ function setupPhotoPage() {
     }
   });
 
+  photoConfettiBtn?.addEventListener("click", () => {
+    launchPhotoConfetti();
+  });
+
   shutterBtn.addEventListener("click", () => {
     if (!video.videoWidth) {
       alert("Espera a que la cámara esté lista.");
       return;
     }
 
-    const dataUrl = takeCompositePhoto(video, outCanvas, stage, overlayCanvas, {
+    const dataUrl = takeCompositePhoto(video, outCanvas, stage, overlayCanvas, fxCanvas, {
       mirror: currentFacing === "user",
       filter: "none",
       emote: activeEmote
