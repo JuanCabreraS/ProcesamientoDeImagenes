@@ -242,13 +242,13 @@ if (!canvas || !stage) {
 
     return {
       x: 0,
-      y: isPortrait ? -0.72 : -0.48,
+      y: isPortrait ? -0.90 : -0.60,
       scale: isPortrait ? 0.13 : 0.12,
       distanceFactor: isPortrait ? 5.90 : 6.00,
       distanceOffset: isPortrait ? 7.40 : 7.70,
       lookOffsetX: 0,
       eyeHeight: isPortrait ? 0.82 : 0.82,
-      lookHeight: isPortrait ? 0.24 : 0.24
+      lookHeight: isPortrait ? 0.16 : 0.16
     };
   }
 
