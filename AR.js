@@ -242,13 +242,11 @@ if (!canvas || !stage) {
 
     return {
       x: 0,
-      y: isPortrait ? 0.08 : 0.04,
+      y: 0,
       scale: isPortrait ? 0.20 : 0.18,
-      distanceFactor: isPortrait ? 5.10 : 5.20,
+      distanceFactor: isPortrait ? 5.05 : 5.20,
       distanceOffset: isPortrait ? 6.00 : 6.20,
-      lookOffsetX: 0,
-      eyeHeight: isPortrait ? 0.96 : 0.94,
-      lookHeight: isPortrait ? 0.42 : 0.42
+      lookOffsetX: 0
     };
   }
 
@@ -266,15 +264,18 @@ if (!canvas || !stage) {
     const fov = THREE.MathUtils.degToRad(camera.fov);
     const dist = ((maxDim / 2) / Math.tan(fov / 2)) * cfg.distanceFactor;
 
+    const eyeHeight = currentFacing === "user" ? 0.78 : 0.88;
+    const lookHeight = currentFacing === "user" ? 0.46 : 0.68;
+
     camera.position.set(
       cfg.x,
-      cfg.y + scaledH * cfg.eyeHeight,
+      scaledH * eyeHeight,
       dist + cfg.distanceOffset
     );
 
     camera.lookAt(
       cfg.x + cfg.lookOffsetX,
-      cfg.y + scaledH * cfg.lookHeight,
+      scaledH * lookHeight,
       0
     );
 
@@ -319,7 +320,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 0.88;
+    const targetHeight = 0.82;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
