@@ -789,8 +789,8 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       this.returnTimer = null;
 
       this.spinActive = false;
-      this.spinStart = 0;
-      this.spinDuration = 1400;
+      this.spinElapsed = 0;
+      this.spinDuration = 2200;
       this.spinFrom = 0;
 
       this.el.addEventListener("model-loaded", () => {
@@ -820,13 +820,16 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       }
 
       if (this.spinActive && this.model) {
-        const progress = Math.min((time - this.spinStart) / this.spinDuration, 1);
+        this.spinElapsed += delta;
+
+        const progress = Math.min(this.spinElapsed / this.spinDuration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
 
         this.model.rotation.y = this.spinFrom + (Math.PI * 2 * eased);
 
         if (progress >= 1) {
           this.spinActive = false;
+          this.spinElapsed = 0;
           this.model.rotation.y = 0;
         }
       }
@@ -906,13 +909,18 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
       }, durationMs);
     },
 
-    rotate360(durationMs = 1400) {
+    rotate360(durationMs = 2200) {
       if (!this.model) return;
 
-      this.spinActive = true;
-      this.spinStart = performance.now();
+      this.spinActive = false;
+      this.spinElapsed = 0;
       this.spinDuration = durationMs;
-      this.spinFrom = this.model.rotation.y || 0;
+      this.spinFrom = 0;
+      this.model.rotation.y = 0;
+
+      requestAnimationFrame(() => {
+        this.spinActive = true;
+      });
     },
   });
 }
@@ -1236,7 +1244,7 @@ function setupMarkerLandingPage(markerScene) {
     const controller = activeMarkerModelEl?.components?.["team-model-controller"];
     if (!controller) return;
 
-    controller.rotate360();
+    controller.rotate360(2200);
   });
 
   confettiBtn?.addEventListener("click", () => {
