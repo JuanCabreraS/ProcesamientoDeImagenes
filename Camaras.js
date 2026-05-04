@@ -25,11 +25,11 @@ function ensureConfettiStyles() {
     }
 
     .fifa-confetti-layer {
-      position: absolute;
+      position: fixed;
       inset: 0;
       pointer-events: none;
       overflow: hidden;
-      z-index: 9999;
+      z-index: 2147483647;
     }
 
     .fifa-confetti-piece {
@@ -48,15 +48,8 @@ function ensureConfettiStyles() {
   confettiStylesInjected = true;
 }
 
-function launchConfetti(container = document.body, count = 36) {
-  if (!container) return;
-
+function launchConfetti(count = 36) {
   ensureConfettiStyles();
-
-  const computed = window.getComputedStyle(container);
-  if (computed.position === "static") {
-    container.style.position = "relative";
-  }
 
   const layer = document.createElement("div");
   layer.className = "fifa-confetti-layer";
@@ -70,7 +63,7 @@ function launchConfetti(container = document.body, count = 36) {
     piece.style.background = colors[i % colors.length];
     piece.style.opacity = "1";
     piece.style.setProperty("--drift", `${(Math.random() - 0.5) * 180}px`);
-    piece.style.animationDuration = `${1.6 + Math.random() * 1.3}s`;
+    piece.style.animationDuration = `${1.8 + Math.random() * 1.2}s`;
     piece.style.animationDelay = `${Math.random() * 0.18}s`;
     piece.style.transform = `rotate(${Math.random() * 180}deg)`;
 
@@ -83,11 +76,11 @@ function launchConfetti(container = document.body, count = 36) {
     layer.appendChild(piece);
   }
 
-  container.appendChild(layer);
+  document.body.appendChild(layer);
 
   setTimeout(() => {
     layer.remove();
-  }, 2600);
+  }, 3200);
 }
 
 let TRIVIA_PLAYERS = [];
@@ -1248,12 +1241,7 @@ function setupMarkerLandingPage(markerScene) {
   });
 
   confettiBtn?.addEventListener("click", () => {
-    const container =
-      document.getElementById("markerFrame") ||
-      document.querySelector(".scan-frame") ||
-      document.body;
-
-    launchConfetti(container, 42);
+    launchConfetti(42);
   });
 
   scanBtn?.addEventListener("click", async () => {
