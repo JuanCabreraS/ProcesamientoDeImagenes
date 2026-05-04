@@ -13,42 +13,42 @@ let triviaLoadPromise = null;
 let PLAYER_PROFILES = {};
 
 const PLAYER_PROFILE_OVERRIDES = {
-  messi: {
+  lionel_messi: {
     jersey: 10,
     rating: 95,
     meta: "Argentina • Delantero"
   },
-  mbappe: {
+  kylian_mbappe: {
     jersey: 10,
     rating: 92,
     meta: "Francia • Delantero"
   },
-  hakimi: {
+  achraf_hakimi: {
     jersey: 2,
     rating: 86,
     meta: "Marruecos • Lateral derecho"
   },
-  haaland: {
+  erling_haaland: {
     jersey: 9,
     rating: 92,
     meta: "Noruega • Delantero"
   },
-  salah: {
+  mohamed_salah: {
     jersey: 10,
     rating: 91,
     meta: "Egipto • Delantero"
   },
-  kimmich: {
+  joshua_kimmich: {
     jersey: 6,
     rating: 89,
     meta: "Alemania • Mediocampista"
   },
-  de_bruyne: {
+  kevin_de_bruyne: {
     jersey: 7,
     rating: 91,
     meta: "Bélgica • Mediocampista"
   },
-  modric: {
+  luka_modric: {
     jersey: 10,
     rating: 89,
     meta: "Croacia • Mediocampista"
@@ -63,7 +63,7 @@ const PLAYER_PROFILE_OVERRIDES = {
     rating: 88,
     meta: "Portugal • Mediocampista"
   },
-  pulisic: {
+  christian_pulisic: {
     jersey: 10,
     rating: 85,
     meta: "Estados Unidos • Extremo"
@@ -1281,12 +1281,7 @@ async function setupTriviaPage() {
   renderQuestion();
 }
 
-function setupPlayerPage() {
-  const currentPlayer = readSelectedTriviaPlayer();
-  const profile = currentPlayer
-  ? (PLAYER_PROFILES[currentPlayer.id] || buildFallbackProfile(currentPlayer))
-  : null;
-
+async function setupPlayerPage() {
   const playerNameEl = document.querySelector(".player-name");
   const playerMetaEl = document.querySelector(".player-meta");
   const jerseyEl = document.getElementById("playerJerseyNumber");
@@ -1312,24 +1307,40 @@ function setupPlayerPage() {
       btn.textContent.toLowerCase().includes("galeria")
     );
 
-  if (currentPlayer) {
-    if (playerNameEl) playerNameEl.textContent = currentPlayer.name;
+  // Si no es la pantalla de jugador, salir
+  if (
+    !playerNameEl &&
+    !playerMetaEl &&
+    !jerseyEl &&
+    !ratingEl &&
+    !statGoalsEl &&
+    !factEls.length
+  ) {
+    return;
   }
 
-  if (profile) {
-    if (playerMetaEl) playerMetaEl.textContent = profile.meta;
-    if (jerseyEl) jerseyEl.textContent = profile.jersey;
-    if (ratingEl) ratingEl.textContent = `Rating: ${profile.rating}`;
+  // IMPORTANTE: esperar a que se cargue PREGUNTAS.txt
+  await ensureTriviaLoaded();
 
-    if (statGoalsEl) statGoalsEl.textContent = profile.stats.goals;
-    if (statAssistsEl) statAssistsEl.textContent = profile.stats.assists;
-    if (statMatchesEl) statMatchesEl.textContent = profile.stats.matches;
-    if (statTrophiesEl) statTrophiesEl.textContent = profile.stats.trophies;
+  const currentPlayer = readSelectedTriviaPlayer();
+  if (!currentPlayer) return;
 
-    if (factEls[0]) factEls[0].textContent = profile.facts[0] || "";
-    if (factEls[1]) factEls[1].textContent = profile.facts[1] || "";
-    if (factEls[2]) factEls[2].textContent = profile.facts[2] || "";
-  }
+  const profile =
+    PLAYER_PROFILES[currentPlayer.id] || buildFallbackProfile(currentPlayer);
+
+  if (playerNameEl) playerNameEl.textContent = currentPlayer.name;
+  if (playerMetaEl) playerMetaEl.textContent = profile.meta;
+  if (jerseyEl) jerseyEl.textContent = profile.jersey;
+  if (ratingEl) ratingEl.textContent = `Rating: ${profile.rating}`;
+
+  if (statGoalsEl) statGoalsEl.textContent = profile.stats.goals;
+  if (statAssistsEl) statAssistsEl.textContent = profile.stats.assists;
+  if (statMatchesEl) statMatchesEl.textContent = profile.stats.matches;
+  if (statTrophiesEl) statTrophiesEl.textContent = profile.stats.trophies;
+
+  if (factEls[0]) factEls[0].textContent = profile.facts[0] || "";
+  if (factEls[1]) factEls[1].textContent = profile.facts[1] || "";
+  if (factEls[2]) factEls[2].textContent = profile.facts[2] || "";
 
   if (photoBtn) {
     photoBtn.addEventListener("click", () => {
