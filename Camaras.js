@@ -10,107 +10,277 @@ let TRIVIA_PLAYERS = [];
 let TRIVIA_PLAYERS_BY_TEAM = {};
 let triviaLoadPromise = null;
 
-const PLAYER_PROFILES = {
+let PLAYER_PROFILES = {};
+
+const PLAYER_PROFILE_OVERRIDES = {
   messi: {
     jersey: 10,
-    meta: "Argentina • Delantero",
     rating: 95,
-    stats: { goals: 820, assists: 360, matches: 1050, trophies: 44 },
-    facts: [
-      "Ganó la Copa del Mundo con Argentina en 2022.",
-      "Debutó profesionalmente con el FC Barcelona.",
-      "Es reconocido por su visión, regate y definición."
-    ]
-  },
-  dimaria: {
-    jersey: 11,
-    meta: "Argentina • Extremo derecho",
-    rating: 87,
-    stats: { goals: 180, assists: 260, matches: 720, trophies: 31 },
-    facts: [
-      "Fue campeón olímpico con Argentina en 2008.",
-      "Marcó goles importantes en finales con su selección.",
-      "Jugó en clubes como Benfica, Real Madrid, PSG y Juventus."
-    ]
-  },
-  julian: {
-    jersey: 9,
-    meta: "Argentina • Delantero",
-    rating: 86,
-    stats: { goals: 140, assists: 55, matches: 260, trophies: 12 },
-    facts: [
-      "Su apodo es 'La Araña'.",
-      "Se formó y brilló con River Plate.",
-      "Fue campeón del mundo con Argentina siendo muy joven."
-    ]
+    meta: "Argentina • Delantero"
   },
   mbappe: {
-    jersey: 7,
-    meta: "Francia • Delantero",
-    rating: 92,
-    stats: { goals: 320, assists: 140, matches: 430, trophies: 18 },
-    facts: [
-      "Fue campeón del mundo con Francia en 2018.",
-      "Destaca por su gran velocidad y definición.",
-      "Debutó profesionalmente con el AS Monaco."
-    ]
-  },
-  giroud: {
-    jersey: 9,
-    meta: "Francia • Delantero",
-    rating: 84,
-    stats: { goals: 280, assists: 95, matches: 690, trophies: 14 },
-    facts: [
-      "Es un delantero conocido por su juego aéreo.",
-      "Ha jugado en ligas como la francesa, inglesa e italiana.",
-      "Destaca por su remate de cabeza y juego de espaldas."
-    ]
-  },
-  neymar: {
     jersey: 10,
-    meta: "Brasil • Delantero",
-    rating: 91,
-    stats: { goals: 440, assists: 220, matches: 710, trophies: 28 },
-    facts: [
-      "Comenzó su carrera profesional en Santos.",
-      "Ganó el oro olímpico con Brasil en 2016.",
-      "Es famoso por su regate, creatividad y técnica."
-    ]
-  },
-  vinicius: {
-    jersey: 7,
-    meta: "Brasil • Extremo",
-    rating: 89,
-    stats: { goals: 110, assists: 75, matches: 320, trophies: 10 },
-    facts: [
-      "Inició su carrera en Flamengo.",
-      "Es uno de los jugadores más explosivos por banda.",
-      "Destaca por su velocidad y desborde."
-    ]
-  },
-  amrabat: {
-    jersey: 4,
-    meta: "Marruecos • Mediocampista",
-    rating: 82,
-    stats: { goals: 12, assists: 18, matches: 310, trophies: 3 },
-    facts: [
-      "Juega como mediocampista de recuperación.",
-      "Destacó mucho con Marruecos en el Mundial 2022.",
-      "Es conocido por su intensidad y fortaleza física."
-    ]
+    rating: 92,
+    meta: "Francia • Delantero"
   },
   hakimi: {
     jersey: 2,
-    meta: "Marruecos • Lateral derecho",
     rating: 86,
-    stats: { goals: 45, assists: 70, matches: 390, trophies: 12 },
-    facts: [
-      "Se desempeña como lateral o carrilero derecho.",
-      "Es reconocido por su velocidad en ataque.",
-      "Antes de consolidarse en Europa pasó por la cantera del Real Madrid."
-    ]
+    meta: "Marruecos • Lateral derecho"
+  },
+  haaland: {
+    jersey: 9,
+    rating: 92,
+    meta: "Noruega • Delantero"
+  },
+  salah: {
+    jersey: 10,
+    rating: 91,
+    meta: "Egipto • Delantero"
+  },
+  kimmich: {
+    jersey: 6,
+    rating: 89,
+    meta: "Alemania • Mediocampista"
+  },
+  de_bruyne: {
+    jersey: 7,
+    rating: 91,
+    meta: "Bélgica • Mediocampista"
+  },
+  modric: {
+    jersey: 10,
+    rating: 89,
+    meta: "Croacia • Mediocampista"
+  },
+  cristiano_ronaldo: {
+    jersey: 7,
+    rating: 90,
+    meta: "Portugal • Delantero"
+  },
+  bruno_miguel_borges_fernandes: {
+    jersey: 8,
+    rating: 88,
+    meta: "Portugal • Mediocampista"
+  },
+  pulisic: {
+    jersey: 10,
+    rating: 85,
+    meta: "Estados Unidos • Extremo"
+  },
+  guillermo_ochoa: {
+    jersey: 13,
+    rating: 82,
+    meta: "México • Portero"
+  },
+  emiliano_martinez: {
+    jersey: 23,
+    rating: 86,
+    meta: "Argentina • Portero"
+  },
+  moises_caicedo: {
+    jersey: 23,
+    rating: 86,
+    meta: "Ecuador • Mediocampista"
+  },
+  jude_bellingham: {
+    jersey: 10,
+    rating: 90,
+    meta: "Inglaterra • Mediocampista"
+  },
+  vinicius_junior: {
+    jersey: 7,
+    rating: 89,
+    meta: "Brasil • Extremo"
+  },
+  luis_diaz: {
+    jersey: 7,
+    rating: 86,
+    meta: "Colombia • Extremo"
+  },
+  federico_valverde: {
+    jersey: 15,
+    rating: 88,
+    meta: "Uruguay • Mediocampista"
+  },
+  son_heung_min: {
+    jersey: 7,
+    rating: 89,
+    meta: "Corea • Delantero"
+  },
+  alphonso_davies: {
+    jersey: 19,
+    rating: 85,
+    meta: "Canadá • Lateral izquierdo"
   }
 };
+
+function hashName(name = "") {
+  return Array.from(name).reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+}
+
+function inferPositionFromQuestionText(text = "") {
+  const t = text.toLowerCase();
+
+  if (t.includes("portero")) return "Portero";
+  if (t.includes("lateral izquierdo")) return "Lateral izquierdo";
+  if (t.includes("lateral derecho")) return "Lateral derecho";
+  if (t.includes("defensa central")) return "Defensa central";
+  if (t.includes("defensor")) return "Defensa";
+  if (t.includes("extremo")) return "Extremo";
+  if (t.includes("mediocampista")) return "Mediocampista";
+  if (t.includes("delantero")) return "Delantero";
+  if (t.includes("goleador")) return "Delantero";
+
+  return "Jugador";
+}
+
+function defaultRatingForPosition(position) {
+  switch (position) {
+    case "Portero":
+      return 82;
+    case "Defensa central":
+    case "Defensa":
+      return 81;
+    case "Lateral izquierdo":
+    case "Lateral derecho":
+      return 82;
+    case "Mediocampista":
+      return 84;
+    case "Extremo":
+      return 84;
+    case "Delantero":
+      return 85;
+    default:
+      return 80;
+  }
+}
+
+function inferJersey(playerId, position) {
+  const known = {
+    jonathan_david: 20,
+    christian_pulisic: 10,
+    tim_ream: 13,
+    carlos_acevedo: 1,
+    florian_wirtz: 17,
+    riyad_mahrez: 7,
+    ismael_bennacer: 22,
+    jordan_bos: 3,
+    david_alaba: 8,
+    jeremy_doku: 22,
+    akram_afif: 11,
+    james_rodriguez: 10,
+    luka_modric: 10,
+    mohamed_salah: 10,
+    andrew_robertson: 3,
+    pedri: 8,
+    michael_olise: 11,
+    inaki_williams: 9,
+    kaoru_mitoma: 7,
+    achraf_hakimi: 2,
+    erling_haaland: 9,
+    virgil_van_dijk: 4,
+    cristiano_ronaldo: 7,
+    sadio_mane: 10,
+    granit_xhaka: 10,
+    breel_embolo: 7,
+    arda_guler: 8,
+    eldor_shomurodov: 14
+  };
+
+  if (known[playerId]) return known[playerId];
+
+  if (position === "Portero") return 1;
+  if (position.includes("Lateral")) return 2;
+  if (position.includes("Defensa")) return 4;
+  if (position === "Mediocampista") return 8;
+  if (position === "Extremo") return 11;
+  if (position === "Delantero") return 9;
+
+  return "--";
+}
+
+function buildStatsForPlayer(playerId, position, rating, name) {
+  const seed = hashName(playerId + name);
+  const matches = 140 + (seed % 420);
+  const trophies = 1 + (seed % 18);
+
+  let goals = 0;
+  let assists = 0;
+
+  if (position === "Portero") {
+    goals = seed % 2;
+    assists = seed % 6;
+  } else if (position.includes("Defensa")) {
+    goals = 5 + (seed % 18);
+    assists = 8 + (seed % 20);
+  } else if (position.includes("Lateral")) {
+    goals = 8 + (seed % 16);
+    assists = 18 + (seed % 26);
+  } else if (position === "Mediocampista") {
+    goals = 18 + (seed % 40);
+    assists = 20 + (seed % 45);
+  } else if (position === "Extremo") {
+    goals = 35 + (seed % 70);
+    assists = 22 + (seed % 50);
+  } else if (position === "Delantero") {
+    goals = 55 + (seed % 180);
+    assists = 15 + (seed % 45);
+  } else {
+    goals = 10 + (seed % 30);
+    assists = 8 + (seed % 25);
+  }
+
+  return {
+    goals,
+    assists,
+    matches,
+    trophies
+  };
+}
+
+function buildFactsForPlayer(player, teamLabel, position) {
+  return [
+    `${player.name} representa a ${teamLabel} en esta experiencia.`,
+    `Su rol principal en la app es ${position.toLowerCase()}.`,
+    `Escanea el escudo de ${teamLabel} para desbloquear su trivia y ficha.`
+  ];
+}
+
+function buildAutoPlayerProfile(player) {
+  const teamLabel = TEAM_CONFIG[player.teamId]?.label || player.meta || "Selección";
+  const firstQuestionText = player.questions?.[0]?.text || "";
+  const position = inferPositionFromQuestionText(firstQuestionText);
+  const rating = defaultRatingForPosition(position);
+  const jersey = inferJersey(player.id, position);
+
+  return {
+    jersey,
+    meta: `${teamLabel} • ${position}`,
+    rating,
+    stats: buildStatsForPlayer(player.id, position, rating, player.name),
+    facts: buildFactsForPlayer(player, teamLabel, position)
+  };
+}
+
+function rebuildPlayerProfiles() {
+  PLAYER_PROFILES = Object.fromEntries(
+    TRIVIA_PLAYERS.map((player) => {
+      const autoProfile = buildAutoPlayerProfile(player);
+      const override = PLAYER_PROFILE_OVERRIDES[player.id] || {};
+
+      return [
+        player.id,
+        {
+          ...autoProfile,
+          ...override,
+          stats: override.stats || autoProfile.stats,
+          facts: override.facts || autoProfile.facts
+        }
+      ];
+    })
+  );
+}
 
 function saveSelectedTriviaPlayer(player) {
   sessionStorage.setItem("selectedTriviaPlayer", JSON.stringify(player));
@@ -353,6 +523,8 @@ function parseTriviaTxt(rawText) {
     acc[player.teamId].push(player);
     return acc;
   }, {});
+
+  rebuildPlayerProfiles();
 }
 
 async function ensureTriviaLoaded() {
