@@ -229,26 +229,26 @@ if (!canvas || !stage) {
   function getViewConfig() {
     if (currentFacing === "user") {
       return {
-        x: isPortrait ? 0.04 : 0.08,
-        y: isPortrait ? -0.22 : -0.14,
-        scale: isPortrait ? 0.22 : 0.20,
-        distanceFactor: isPortrait ? 4.55 : 4.65,
-        distanceOffset: isPortrait ? 5.40 : 5.60,
-        lookOffsetX: isPortrait ? -0.02 : -0.02,
-        eyeHeight: isPortrait ? 0.84 : 0.84,
-        lookHeight: isPortrait ? 0.34 : 0.34
+        x: isPortrait ? 0.02 : 0.05,
+        y: isPortrait ? -0.52 : -0.34,
+        scale: isPortrait ? 0.16 : 0.15,
+        distanceFactor: isPortrait ? 5.00 : 5.10,
+        distanceOffset: isPortrait ? 6.20 : 6.40,
+        lookOffsetX: isPortrait ? -0.01 : -0.01,
+        eyeHeight: isPortrait ? 0.80 : 0.80,
+        lookHeight: isPortrait ? 0.22 : 0.22
       };
     }
 
     return {
       x: 0,
-      y: isPortrait ? -0.50 : -0.34,
-      scale: isPortrait ? 0.14 : 0.13,
-      distanceFactor: isPortrait ? 5.60 : 5.70,
-      distanceOffset: isPortrait ? 7.40 : 7.60,
+      y: isPortrait ? -0.72 : -0.48,
+      scale: isPortrait ? 0.13 : 0.12,
+      distanceFactor: isPortrait ? 5.90 : 6.00,
+      distanceOffset: isPortrait ? 7.40 : 7.70,
       lookOffsetX: 0,
-      eyeHeight: isPortrait ? 0.86 : 0.86,
-      lookHeight: isPortrait ? 0.36 : 0.36
+      eyeHeight: isPortrait ? 0.82 : 0.82,
+      lookHeight: isPortrait ? 0.24 : 0.24
     };
   }
 
@@ -319,7 +319,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 0.72;
+    const targetHeight = 0.62;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
