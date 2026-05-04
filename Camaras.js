@@ -1491,6 +1491,8 @@ function setupVideoGalleryPage() {
   const modal = document.getElementById("videoModal");
   const closeBtn = document.getElementById("closeVideoBtn");
   const player = document.getElementById("galleryVideoPlayer");
+  const playerWrap = document.querySelector(".gallery-player-wrap");
+  const playerFxCanvas = document.getElementById("galleryVideoFx");
   const title = document.getElementById("videoModalTitle");
   const cards = Array.from(document.querySelectorAll(".video-card"));
   const filterButtons = Array.from(document.querySelectorAll("[data-video-filter]"));
@@ -1499,8 +1501,79 @@ function setupVideoGalleryPage() {
 
   let currentVideoFilter = "normal";
 
+  let pixelRaf = 0;
+  let pixelEnabled = false;
+
+  const pixelBuffer = document.createElement("canvas");
+  const pixelBufferCtx = pixelBuffer.getContext("2d", { willReadFrequently: true });
+  const playerFxCtx = playerFxCanvas?.getContext("2d", { willReadFrequently: true });
+
+  function resizePixelCanvas() {
+    if (!playerFxCanvas || !playerWrap) return;
+
+    const rect = playerWrap.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const controlBarHeight = 44;
+
+    playerFxCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    playerFxCanvas.height = Math.max(1, Math.floor((rect.height - controlBarHeight) * dpr));
+  }
+
+  function stopPixelFilter() {
+    pixelEnabled = false;
+
+    if (pixelRaf) {
+      cancelAnimationFrame(pixelRaf);
+      pixelRaf = 0;
+    }
+
+    playerWrap?.classList.remove("is-pixelated");
+
+    if (playerFxCanvas && playerFxCtx) {
+      playerFxCtx.clearRect(0, 0, playerFxCanvas.width, playerFxCanvas.height);
+    }
+  }
+
+  function renderPixelFilter() {
+    if (!pixelEnabled || !playerFxCanvas || !playerFxCtx) return;
+
+    resizePixelCanvas();
+
+    const outW = playerFxCanvas.width;
+    const outH = playerFxCanvas.height;
+
+    if (player.readyState >= 2 && outW > 0 && outH > 0) {
+      const pixelScale = 0.10;
+      const sampleW = Math.max(1, Math.floor(outW * pixelScale));
+      const sampleH = Math.max(1, Math.floor(outH * pixelScale));
+
+      pixelBuffer.width = sampleW;
+      pixelBuffer.height = sampleH;
+
+      pixelBufferCtx.clearRect(0, 0, sampleW, sampleH);
+      pixelBufferCtx.drawImage(player, 0, 0, sampleW, sampleH);
+
+      playerFxCtx.clearRect(0, 0, outW, outH);
+      playerFxCtx.imageSmoothingEnabled = false;
+      playerFxCtx.drawImage(pixelBuffer, 0, 0, sampleW, sampleH, 0, 0, outW, outH);
+    }
+
+    pixelRaf = requestAnimationFrame(renderPixelFilter);
+  }
+
+  function startPixelFilter() {
+    if (!playerFxCanvas || !playerFxCtx || !playerWrap) return;
+
+    stopPixelFilter();
+    pixelEnabled = true;
+    playerWrap.classList.add("is-pixelated");
+    renderPixelFilter();
+  }
+
   function applyVideoFilter(filterName = "normal") {
     currentVideoFilter = filterName;
+
+    stopPixelFilter();
 
     player.classList.remove(
       "filter-normal",
@@ -1510,7 +1583,11 @@ function setupVideoGalleryPage() {
       "filter-stadium"
     );
 
-    player.classList.add(`filter-${filterName}`);
+    if (filterName === "pixel") {
+      startPixelFilter();
+    } else {
+      player.classList.add(`filter-${filterName}`);
+    }
 
     filterButtons.forEach((btn) => {
       btn.classList.toggle("is-active", btn.dataset.videoFilter === filterName);
@@ -1568,6 +1645,12 @@ function setupVideoGalleryPage() {
   });
 
   applyVideoFilter("normal");
+
+  window.addEventListener("resize", () => {
+    if (currentVideoFilter === "pixel") {
+      resizePixelCanvas();
+    }
+  });
 
   closeBtn.addEventListener("click", closeVideo);
 

@@ -268,6 +268,31 @@ body{
   max-height: 70vh;
 }
 
+.gallery-player-wrap{
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+}
+
+.gallery-player-fx{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 44px;
+  width: 100%;
+  height: calc(100% - 44px);
+  display: none;
+  pointer-events: none;
+  image-rendering: pixelated;
+  z-index: 2;
+}
+
+.gallery-player-wrap.is-pixelated .gallery-player-fx{
+  display: block;
+}
+
 @media (max-width: 380px){
   .video-gallery{
     grid-template-columns: 1fr;
