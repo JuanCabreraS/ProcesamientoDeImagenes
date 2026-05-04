@@ -229,24 +229,26 @@ if (!canvas || !stage) {
   function getViewConfig() {
     if (currentFacing === "user") {
       return {
-        x: isPortrait ? 0.06 : 0.10,
-        y: isPortrait ? 0.00 : 0.00,
-        scale: isPortrait ? 0.26 : 0.24,
-        distanceFactor: isPortrait ? 4.20 : 4.35,
-        distanceOffset: isPortrait ? 4.80 : 5.00,
+        x: isPortrait ? 0.04 : 0.08,
+        y: isPortrait ? -0.22 : -0.14,
+        scale: isPortrait ? 0.22 : 0.20,
+        distanceFactor: isPortrait ? 4.55 : 4.65,
+        distanceOffset: isPortrait ? 5.40 : 5.60,
         lookOffsetX: isPortrait ? -0.02 : -0.02,
-        eyeHeight: isPortrait ? 0.88 : 0.88,
-        lookHeight: isPortrait ? 0.42 : 0.42
+        eyeHeight: isPortrait ? 0.84 : 0.84,
+        lookHeight: isPortrait ? 0.34 : 0.34
       };
     }
 
     return {
       x: 0,
-      y: 0,
-      scale: isPortrait ? 0.20 : 0.18,
-      distanceFactor: isPortrait ? 5.05 : 5.20,
-      distanceOffset: isPortrait ? 6.00 : 6.20,
-      lookOffsetX: 0
+      y: isPortrait ? -0.30 : -0.20,
+      scale: isPortrait ? 0.17 : 0.16,
+      distanceFactor: isPortrait ? 5.60 : 5.70,
+      distanceOffset: isPortrait ? 6.80 : 7.00,
+      lookOffsetX: 0,
+      eyeHeight: isPortrait ? 0.86 : 0.86,
+      lookHeight: isPortrait ? 0.52 : 0.52
     };
   }
 
@@ -264,18 +266,15 @@ if (!canvas || !stage) {
     const fov = THREE.MathUtils.degToRad(camera.fov);
     const dist = ((maxDim / 2) / Math.tan(fov / 2)) * cfg.distanceFactor;
 
-    const eyeHeight = currentFacing === "user" ? 0.78 : 0.88;
-    const lookHeight = currentFacing === "user" ? 0.46 : 0.68;
-
     camera.position.set(
       cfg.x,
-      scaledH * eyeHeight,
+      scaledH * cfg.eyeHeight,
       dist + cfg.distanceOffset
     );
 
     camera.lookAt(
       cfg.x + cfg.lookOffsetX,
-      scaledH * lookHeight,
+      scaledH * cfg.lookHeight,
       0
     );
 
@@ -320,7 +319,7 @@ if (!canvas || !stage) {
     box = new THREE.Box3().setFromObject(object3D);
     const size = box.getSize(new THREE.Vector3());
 
-    const targetHeight = 0.82;
+    const targetHeight = 0.72;
     const scale = targetHeight / Math.max(size.y, 0.001);
     object3D.scale.setScalar(scale);
 
