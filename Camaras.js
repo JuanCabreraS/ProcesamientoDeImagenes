@@ -1493,8 +1493,29 @@ function setupVideoGalleryPage() {
   const player = document.getElementById("galleryVideoPlayer");
   const title = document.getElementById("videoModalTitle");
   const cards = Array.from(document.querySelectorAll(".video-card"));
+  const filterButtons = Array.from(document.querySelectorAll("[data-video-filter]"));
 
   if (!modal || !closeBtn || !player || !title || cards.length === 0) return;
+
+  let currentVideoFilter = "normal";
+
+  function applyVideoFilter(filterName = "normal") {
+    currentVideoFilter = filterName;
+
+    player.classList.remove(
+      "filter-normal",
+      "filter-blur",
+      "filter-thermal",
+      "filter-vivid",
+      "filter-stadium"
+    );
+
+    player.classList.add(`filter-${filterName}`);
+
+    filterButtons.forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.videoFilter === filterName);
+    });
+  }
 
   function closeVideo() {
     modal.classList.remove("is-open");
@@ -1502,6 +1523,7 @@ function setupVideoGalleryPage() {
     player.pause();
     player.removeAttribute("src");
     player.load();
+    applyVideoFilter("normal");
   }
 
   function openVideo(card) {
@@ -1523,6 +1545,8 @@ function setupVideoGalleryPage() {
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
 
+    applyVideoFilter(currentVideoFilter);
+
     const playPromise = player.play();
     if (playPromise?.catch) {
       playPromise.catch(() => {});
@@ -1536,6 +1560,14 @@ function setupVideoGalleryPage() {
   cards.forEach((card) => {
     card.addEventListener("click", () => openVideo(card));
   });
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      applyVideoFilter(btn.dataset.videoFilter || "normal");
+    });
+  });
+
+  applyVideoFilter("normal");
 
   closeBtn.addEventListener("click", closeVideo);
 

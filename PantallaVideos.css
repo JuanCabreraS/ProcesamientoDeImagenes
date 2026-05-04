@@ -216,6 +216,51 @@ body{
   cursor: pointer;
 }
 
+.video-filters{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+  background: rgba(248,250,252,0.96);
+}
+
+.video-filter-btn{
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(15,23,42,0.08);
+  color: #111827;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.video-filter-btn.is-active{
+  background: #111827;
+  color: #fff;
+}
+
+.gallery-player.filter-normal{
+  filter: none;
+}
+
+.gallery-player.filter-blur{
+  filter: blur(2px) saturate(1.10) contrast(1.04);
+}
+
+.gallery-player.filter-thermal{
+  filter: hue-rotate(145deg) saturate(2.2) contrast(1.25) brightness(1.08);
+}
+
+.gallery-player.filter-vivid{
+  filter: saturate(1.6) contrast(1.14) hue-rotate(8deg);
+}
+
+.gallery-player.filter-stadium{
+  filter: saturate(1.35) contrast(1.10) brightness(1.06) hue-rotate(-12deg);
+}
+
 .gallery-player{
   width: 100%;
   display: block;
