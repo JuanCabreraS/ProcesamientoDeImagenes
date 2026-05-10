@@ -918,7 +918,168 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
   });
 }
 
+const SCREEN_TUTORIALS = {
+  "page-marker": {
+    title: "Tutorial: Escáner AR",
+    text: "En esta pantalla debes apuntar la cámara al escudo o marcador para que aparezca el jugador en realidad aumentada. Cuando el equipo sea detectado, podrás interactuar con el modelo y continuar a la trivia.",
+    steps: [
+      "Apunta la cámara al escudo hasta que aparezca el jugador.",
+      "Cuando se detecte el marcador, se desbloqueará el botón para comenzar la trivia.",
+      "Usa esta pantalla para explorar al jugador antes de continuar."
+    ],
+    buttons: [
+      "Busca el marcador: avanza a la trivia cuando el equipo ya fue detectado.",
+      "Dance: reproduce la animación Dance_Loop.",
+      "Victory: reproduce la animación Victory.",
+      "Yes: reproduce la animación Yes.",
+      "Rotar 360°: gira al jugador una sola vuelta.",
+      "Confeti: activa el efecto visual de celebración."
+    ]
+  },
+
+  "page-trivia": {
+    title: "Tutorial: Trivia",
+    text: "En esta pantalla responderás dos preguntas del jugador o equipo desbloqueado. Debes seleccionar una respuesta y confirmarla para avanzar.",
+    steps: [
+      "Toca una respuesta para seleccionarla.",
+      "Presiona Confirmar Respuesta para validar tu elección.",
+      "Debes acertar al menos una para continuar a la ficha del jugador."
+    ],
+    buttons: [
+      "Respuestas: seleccionan tu opción.",
+      "Confirmar Respuesta: revisa la elección y avanza a la siguiente pregunta."
+    ]
+  },
+
+  "page-player": {
+    title: "Tutorial: Pantalla del jugador",
+    text: "Aquí puedes consultar la ficha del jugador desbloqueado, con sus estadísticas y curiosidades principales.",
+    steps: [
+      "Revisa el nombre, el número, el rating y la información del jugador.",
+      "Consulta las estadísticas y curiosidades mostradas en pantalla.",
+      "Desde aquí puedes ir a la galería de videos o tomar una foto con el jugador."
+    ],
+    buttons: [
+      "Ver Galería de Videos: abre la pantalla de videos.",
+      "Tomar Foto con Jugador: abre la experiencia de foto AR.",
+      "Inicio: regresa a la pantalla principal."
+    ]
+  },
+
+  "page-videos": {
+    title: "Tutorial: Galería de videos",
+    text: "En esta pantalla puedes abrir videos temáticos de los países y aplicar filtros visuales durante la reproducción.",
+    steps: [
+      "Toca una miniatura para abrir el video.",
+      "Acepta el mensaje de reproducción para comenzar.",
+      "Dentro del modal puedes probar distintos filtros."
+    ],
+    buttons: [
+      "Miniaturas de video: abren el reproductor.",
+      "Filtros: cambian el aspecto del video.",
+      "✕: cierra el video actual.",
+      "Regresar: vuelve a la pantalla del jugador.",
+      "Inicio: vuelve al inicio."
+    ]
+  },
+
+  "page-foto": {
+    title: "Tutorial: Foto con jugador",
+    text: "En esta pantalla puedes verte con el jugador en AR, cambiar la cámara, activar animaciones y tomar una foto final.",
+    steps: [
+      "Colócate frente a la cámara con el jugador en cuadro.",
+      "Si quieres, cambia de cámara antes de capturar.",
+      "Puedes activar una animación o lanzar confeti antes de tomar la foto."
+    ],
+    buttons: [
+      "Cambiar cámara: alterna entre cámara frontal y trasera.",
+      "Confeti: activa el efecto visual y también puede salir en la foto.",
+      "D / V / Y: reproducen las tres animaciones del jugador.",
+      "Botón central de cámara: toma la foto final.",
+      "Regresar: vuelve a la pantalla anterior.",
+      "Inicio: vuelve al inicio."
+    ]
+  },
+
+  "page-capturada": {
+    title: "Tutorial: Foto capturada",
+    text: "Aquí verás el resultado final de la foto tomada con el jugador. Desde esta pantalla puedes descargarla o repetirla.",
+    steps: [
+      "Revisa la imagen final capturada.",
+      "Si no te gustó, puedes volver a tomarla.",
+      "Si quedó bien, puedes descargarla o compartirla."
+    ],
+    buttons: [
+      "Tomar Otra Foto: regresa a la cámara para repetir la captura.",
+      "Descargar: guarda la imagen en tu dispositivo.",
+      "Botones de compartir: preparan el envío a redes o apps.",
+      "Inicio: vuelve al inicio."
+    ]
+  }
+};
+
+function getCurrentTutorialConfig() {
+  const body = document.body;
+  if (!body) return null;
+
+  for (const pageClass of Object.keys(SCREEN_TUTORIALS)) {
+    if (body.classList.contains(pageClass)) {
+      return SCREEN_TUTORIALS[pageClass];
+    }
+  }
+
+  return null;
+}
+
+function setupTutorialOverlay() {
+  const config = getCurrentTutorialConfig();
+  if (!config) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "tutorial-overlay";
+  overlay.id = "tutorialOverlay";
+
+  const stepsHtml = (config.steps || [])
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+
+  const buttonsHtml = (config.buttons || [])
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+
+  overlay.innerHTML = `
+    <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
+      <h2 id="tutorialTitle" class="tutorial-card__title">${config.title}</h2>
+      <p class="tutorial-card__text">${config.text}</p>
+
+      <section class="tutorial-card__section">
+        <h3 class="tutorial-card__section-title">Qué debes hacer</h3>
+        <ul class="tutorial-card__list">${stepsHtml}</ul>
+      </section>
+
+      <section class="tutorial-card__section">
+        <h3 class="tutorial-card__section-title">Botones y controles</h3>
+        <ul class="tutorial-card__list">${buttonsHtml}</ul>
+      </section>
+
+      <div class="tutorial-card__actions">
+        <button id="tutorialAcceptBtn" class="tutorial-card__btn" type="button">Aceptar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("tutorial-lock");
+
+  const acceptBtn = overlay.querySelector("#tutorialAcceptBtn");
+  acceptBtn?.addEventListener("click", () => {
+    overlay.remove();
+    document.body.classList.remove("tutorial-lock");
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupTutorialOverlay();
   setupHomeButtons();
   setupLandingPage();
   setupTriviaPage();
