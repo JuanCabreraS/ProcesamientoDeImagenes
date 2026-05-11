@@ -1,7 +1,50 @@
+function stopActiveMediaAndAR() {
+  try {
+    document.querySelectorAll("video").forEach((video) => {
+      try {
+        window.CameraUtils?.stopCamera?.(video);
+      } catch (_) {}
+
+      try {
+        video.pause();
+      } catch (_) {}
+
+      try {
+        video.srcObject = null;
+      } catch (_) {}
+    });
+
+    const markerScene = document.getElementById("markerScene");
+    const arSystem = markerScene?.systems?.["mindar-image-system"];
+
+    try {
+      arSystem?.stop?.();
+    } catch (_) {}
+
+    try {
+      markerScene?.renderer?.setAnimationLoop?.(null);
+    } catch (_) {}
+
+    try {
+      window.ARPhoto?.resetEmote?.();
+    } catch (_) {}
+  } catch (error) {
+    console.warn("No se pudo limpiar AR/cámara antes de navegar:", error);
+  }
+}
+
 function setupHomeButtons() {
   document.querySelectorAll("[data-home]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      window.location.href = encodeURI("index.html");
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      stopActiveMediaAndAR();
+      sessionStorage.removeItem("markerUnlocked");
+
+      setTimeout(() => {
+        window.location.href = encodeURI("index.html");
+      }, 120);
     });
   });
 }
@@ -277,7 +320,7 @@ function inferJersey(playerId, position) {
   return "--";
 }
 
-function buildStatsForPlayer(playerId, position, rating, name) {
+function buildStatsForPlayer(playerId, position, name) {
   const seed = hashName(playerId + name);
   const matches = 140 + (seed % 420);
   const trophies = 1 + (seed % 18);
@@ -335,7 +378,7 @@ function buildAutoPlayerProfile(player) {
     jersey,
     meta: `${teamLabel} • ${position}`,
     rating,
-    stats: buildStatsForPlayer(player.id, position, rating, player.name),
+    stats: buildStatsForPlayer(player.id, position, player.name),
     facts: buildFactsForPlayer(player, teamLabel, position)
   };
 }
@@ -1148,10 +1191,14 @@ function positionTutorialCard(card, rect, placement = "bottom") {
   }
 
   if (placement === "left") {
+    const left = Math.max(margin, rect.left - cardRect.width - gap);
     const top = Math.min(
       window.innerHeight - cardRect.height - margin,
       Math.max(margin, rect.top + rect.height / 2 - cardRect.height / 2)
     );
+
+    card.style.left = `${left}px`;
+    card.style.transform = "none";
     card.style.top = `${top}px`;
     return;
   }
@@ -1166,8 +1213,15 @@ function positionTutorialCard(card, rect, placement = "bottom") {
   card.style.top = `${fallbackTop}px`;
 }
 
+let activeTutorialResizeHandler = null;
+
 function launchTutorialSteps(steps) {
   if (!steps || !steps.length) return;
+
+  if (activeTutorialResizeHandler) {
+    window.removeEventListener("resize", activeTutorialResizeHandler);
+    activeTutorialResizeHandler = null;
+  }
 
   const previous = document.getElementById("tutorialOverlay");
   if (previous) {
@@ -1215,36 +1269,42 @@ function launchTutorialSteps(steps) {
       firstEl.scrollIntoView({
         block: "center",
         inline: "center",
-        behavior: "smooth"
+        behavior: "auto"
       });
     }
 
     requestAnimationFrame(() => {
-      const rect = getUnionRect(elements, step.padding ?? 14);
+      requestAnimationFrame(() => {
+        const rect = getUnionRect(elements, step.padding ?? 14);
 
-      counter.textContent = `Paso ${currentStepIndex + 1} de ${steps.length}`;
-      title.textContent = step.title;
-      text.textContent = step.text;
-      nextBtn.textContent = currentStepIndex === steps.length - 1 ? "Entendido" : "Siguiente";
+        counter.textContent = `Paso ${currentStepIndex + 1} de ${steps.length}`;
+        title.textContent = step.title;
+        text.textContent = step.text;
+        nextBtn.textContent = currentStepIndex === steps.length - 1 ? "Entendido" : "Siguiente";
 
-      if (rect) {
-        spotlight.style.display = "block";
-        spotlight.style.left = `${rect.left}px`;
-        spotlight.style.top = `${rect.top}px`;
-        spotlight.style.width = `${rect.width}px`;
-        spotlight.style.height = `${rect.height}px`;
-      } else {
-        spotlight.style.display = "none";
-      }
+        if (rect) {
+          spotlight.style.display = "block";
+          spotlight.style.left = `${rect.left}px`;
+          spotlight.style.top = `${rect.top}px`;
+          spotlight.style.width = `${rect.width}px`;
+          spotlight.style.height = `${rect.height}px`;
+        } else {
+          spotlight.style.display = "none";
+        }
 
-      positionTutorialCard(card, rect, step.placement || "bottom");
+        positionTutorialCard(card, rect, step.placement || "bottom");
+      });
     });
   }
 
   function closeTutorial() {
     overlay.remove();
     document.body.classList.remove("tutorial-lock");
-    window.removeEventListener("resize", renderStep);
+
+    if (activeTutorialResizeHandler) {
+      window.removeEventListener("resize", activeTutorialResizeHandler);
+      activeTutorialResizeHandler = null;
+    }
   }
 
   nextBtn.addEventListener("click", () => {
@@ -1257,7 +1317,8 @@ function launchTutorialSteps(steps) {
     renderStep();
   });
 
-  window.addEventListener("resize", renderStep);
+  activeTutorialResizeHandler = renderStep;
+  window.addEventListener("resize", activeTutorialResizeHandler);
   renderStep();
 }
 
@@ -1268,7 +1329,6 @@ function setupTutorialOverlay() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupTutorialOverlay();
   setupHomeButtons();
   setupLandingPage();
   setupTriviaPage();
@@ -1276,6 +1336,12 @@ document.addEventListener("DOMContentLoaded", () => {
   setupVideoGalleryPage();
   setupPhotoPage();
   setupCapturedPage();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setupTutorialOverlay();
+    });
+  });
 });
 
 function setupLandingPage() {
@@ -1348,7 +1414,6 @@ function setupLegacyQRPage(video) {
 
 function setupMarkerLandingPage(markerScene) {
   const scanBtn = document.getElementById("scanBtn");
-  const switchBtn = document.getElementById("switchQrCamBtn");
   const animDanceBtn = document.getElementById("animDanceBtn");
   const animVictoryBtn = document.getElementById("animVictoryBtn");
   const animYesBtn = document.getElementById("animYesBtn");
@@ -1444,6 +1509,25 @@ function setupMarkerLandingPage(markerScene) {
     }, attempt < 30 ? 180 : 500);
   };
 
+  function stopMarkerLandingPage() {
+    clearTimeout(previewRetryTimer);
+
+    try {
+      const arSystem = markerScene?.systems?.["mindar-image-system"];
+      arSystem?.stop?.();
+    } catch (_) {}
+
+    try {
+      bgVideo?.pause();
+    } catch (_) {}
+
+    try {
+      bgVideo.srcObject = null;
+    } catch (_) {}
+
+    frame?.classList.remove("is-live", "is-detected");
+  }
+
   const forcePreviewRecovery = () => {
     prepareSceneVisuals();
     schedulePreviewAttach();
@@ -1520,7 +1604,6 @@ function setupMarkerLandingPage(markerScene) {
     targetsBound = true;
   }
 
-  switchBtn?.setAttribute("disabled", "disabled");
   animDanceBtn?.setAttribute("disabled", "disabled");
   animVictoryBtn?.setAttribute("disabled", "disabled");
   animYesBtn?.setAttribute("disabled", "disabled");
@@ -1612,6 +1695,9 @@ function setupMarkerLandingPage(markerScene) {
       forcePreviewRecovery();
     }
   });
+
+  window.addEventListener("beforeunload", stopMarkerLandingPage);
+  window.addEventListener("pagehide", stopMarkerLandingPage);
 
   bgVideo?.addEventListener("emptied", forcePreviewRecovery);
   bgVideo?.addEventListener("stalled", forcePreviewRecovery);
@@ -2025,13 +2111,6 @@ function setupVideoGalleryPage() {
     }
   });
 }
-
-const PHOTO_FILTERS = [
-  { label: "Normal", canvasFilter: "none" },
-  { label: "Frío", canvasFilter: "saturate(1.15) contrast(1.05) hue-rotate(12deg)" },
-  { label: "B&N", canvasFilter: "grayscale(1) contrast(1.12)" },
-  { label: "Cálido", canvasFilter: "sepia(0.28) saturate(1.18) hue-rotate(-10deg)" }
-];
 
 function drawSourceCover(ctx, source, outWidth, outHeight, options = {}) {
   const { mirror = false, filter = "none" } = options;
