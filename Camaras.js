@@ -918,152 +918,276 @@ if (window.AFRAME && !AFRAME.components["team-model-controller"]) {
   });
 }
 
-const SCREEN_TUTORIALS = {
-  "page-marker": {
-    title: "Tutorial: Escáner AR",
-    text: "En esta pantalla debes apuntar la cámara al escudo o marcador para que aparezca el jugador en realidad aumentada. Cuando el equipo sea detectado, podrás interactuar con el modelo y continuar a la trivia.",
-    steps: [
-      "Apunta la cámara al escudo hasta que aparezca el jugador.",
-      "Cuando se detecte el marcador, se desbloqueará el botón para comenzar la trivia.",
-      "Usa esta pantalla para explorar al jugador antes de continuar."
-    ],
-    buttons: [
-      "Busca el marcador: avanza a la trivia cuando el equipo ya fue detectado.",
-      "Dance: reproduce la animación Dance_Loop.",
-      "Victory: reproduce la animación Victory.",
-      "Yes: reproduce la animación Yes.",
-      "Rotar 360°: gira al jugador una sola vuelta.",
-      "Confeti: activa el efecto visual de celebración."
-    ]
-  },
+const SCREEN_TUTORIAL_STEPS = {
+  "page-marker": [
+    {
+      selector: "#markerFrame",
+      title: "Escáner AR",
+      text: "Aquí apuntas la cámara al escudo para detectar al equipo y mostrar al jugador.",
+      placement: "bottom"
+    },
+    {
+      selector: ["#animDanceBtn", "#animVictoryBtn", "#animYesBtn", "#rotate360Btn", "#confettiBtn"],
+      title: "Botones del jugador",
+      text: "Estos botones sirven para animar al jugador, girarlo y activar el efecto de confeti.",
+      placement: "top"
+    },
+    {
+      selector: "#scanBtn",
+      title: "Continuar a la trivia",
+      text: "Cuando ya se detectó el escudo, este botón te lleva a la trivia.",
+      placement: "top"
+    }
+  ],
 
-  "page-trivia": {
-    title: "Tutorial: Trivia",
-    text: "En esta pantalla responderás dos preguntas del jugador o equipo desbloqueado. Debes seleccionar una respuesta y confirmarla para avanzar.",
-    steps: [
-      "Toca una respuesta para seleccionarla.",
-      "Presiona Confirmar Respuesta para validar tu elección.",
-      "Debes acertar al menos una para continuar a la ficha del jugador."
-    ],
-    buttons: [
-      "Respuestas: seleccionan tu opción.",
-      "Confirmar Respuesta: revisa la elección y avanza a la siguiente pregunta."
-    ]
-  },
+  "page-trivia": [
+    {
+      selector: ".card",
+      title: "Pregunta actual",
+      text: "Aquí aparece la pregunta del jugador o del equipo seleccionado.",
+      placement: "bottom"
+    },
+    {
+      selector: ".answers",
+      title: "Respuestas",
+      text: "Toca una respuesta para seleccionarla.",
+      placement: "bottom"
+    },
+    {
+      selector: ".confirm",
+      title: "Siguiente paso",
+      text: "Después de elegir una respuesta, usa este botón para confirmarla y avanzar.",
+      placement: "top"
+    }
+  ],
 
-  "page-player": {
-    title: "Tutorial: Pantalla del jugador",
-    text: "Aquí puedes consultar la ficha del jugador desbloqueado, con sus estadísticas y curiosidades principales.",
-    steps: [
-      "Revisa el nombre, el número, el rating y la información del jugador.",
-      "Consulta las estadísticas y curiosidades mostradas en pantalla.",
-      "Desde aquí puedes ir a la galería de videos o tomar una foto con el jugador."
-    ],
-    buttons: [
-      "Ver Galería de Videos: abre la pantalla de videos.",
-      "Tomar Foto con Jugador: abre la experiencia de foto AR.",
-      "Inicio: regresa a la pantalla principal."
-    ]
-  },
+  "page-player": [
+    {
+      selector: ".player-head",
+      title: "Ficha del jugador",
+      text: "Aquí ves el nombre, número y rating del jugador desbloqueado.",
+      placement: "bottom"
+    },
+    {
+      selector: ".stats-grid",
+      title: "Estadísticas",
+      text: "En esta sección se muestran los datos principales del jugador.",
+      placement: "bottom"
+    },
+    {
+      selector: ".facts",
+      title: "Curiosidades",
+      text: "Aquí puedes leer datos breves sobre el jugador y su selección.",
+      placement: "top"
+    },
+    {
+      selector: ".cta-stack",
+      title: "Acciones",
+      text: "Desde aquí puedes ir a los videos o pasar a la foto con el jugador.",
+      placement: "top"
+    }
+  ],
 
-  "page-videos": {
-    title: "Tutorial: Galería de videos",
-    text: "En esta pantalla puedes abrir videos temáticos de los países y aplicar filtros visuales durante la reproducción.",
-    steps: [
-      "Toca una miniatura para abrir el video.",
-      "Acepta el mensaje de reproducción para comenzar.",
-      "Dentro del modal puedes probar distintos filtros."
-    ],
-    buttons: [
-      "Miniaturas de video: abren el reproductor.",
-      "Filtros: cambian el aspecto del video.",
-      "✕: cierra el video actual.",
-      "Regresar: vuelve a la pantalla del jugador.",
-      "Inicio: vuelve al inicio."
-    ]
-  },
+  "page-videos": [
+    {
+      selector: ".video-gallery",
+      title: "Galería de videos",
+      text: "Aquí se muestran los videos disponibles para abrir.",
+      placement: "top"
+    },
+    {
+      selector: ".video-card",
+      title: "Seleccionar video",
+      text: "Toca cualquier tarjeta para abrir su reproducción.",
+      placement: "top"
+    },
+    {
+      selector: ["#backToPlayerBtn", "[data-home]"],
+      title: "Navegación",
+      text: "Con estos botones puedes regresar o volver al inicio.",
+      placement: "bottom"
+    }
+  ],
 
-  "page-foto": {
-    title: "Tutorial: Foto con jugador",
-    text: "En esta pantalla puedes verte con el jugador en AR, cambiar la cámara, activar animaciones y tomar una foto final.",
-    steps: [
-      "Colócate frente a la cámara con el jugador en cuadro.",
-      "Si quieres, cambia de cámara antes de capturar.",
-      "Puedes activar una animación o lanzar confeti antes de tomar la foto."
-    ],
-    buttons: [
-      "Cambiar cámara: alterna entre cámara frontal y trasera.",
-      "Confeti: activa el efecto visual y también puede salir en la foto.",
-      "D / V / Y: reproducen las tres animaciones del jugador.",
-      "Botón central de cámara: toma la foto final.",
-      "Regresar: vuelve a la pantalla anterior.",
-      "Inicio: vuelve al inicio."
-    ]
-  },
+  "page-foto": [
+    {
+      selector: ".emote-stack",
+      title: "Animaciones",
+      text: "Estos botones activan las animaciones del jugador en la cámara.",
+      placement: "left"
+    },
+    {
+      selector: ".capture-row",
+      title: "Controles de cámara",
+      text: "Aquí puedes cambiar la cámara o activar el confeti.",
+      placement: "top"
+    },
+    {
+      selector: "#shutterBtn",
+      title: "Tomar foto",
+      text: "Cuando estés listo, presiona este botón para capturar la foto final.",
+      placement: "top"
+    },
+    {
+      selector: ["#backBtn", "[data-home]"],
+      title: "Navegación",
+      text: "Con estos botones puedes regresar o volver al inicio.",
+      placement: "bottom"
+    }
+  ],
 
-  "page-capturada": {
-    title: "Tutorial: Foto capturada",
-    text: "Aquí verás el resultado final de la foto tomada con el jugador. Desde esta pantalla puedes descargarla o repetirla.",
-    steps: [
-      "Revisa la imagen final capturada.",
-      "Si no te gustó, puedes volver a tomarla.",
-      "Si quedó bien, puedes descargarla o compartirla."
-    ],
-    buttons: [
-      "Tomar Otra Foto: regresa a la cámara para repetir la captura.",
-      "Descargar: guarda la imagen en tu dispositivo.",
-      "Botones de compartir: preparan el envío a redes o apps.",
-      "Inicio: vuelve al inicio."
-    ]
-  }
+  "page-capturada": [
+    {
+      selector: ".photo-stage",
+      title: "Foto final",
+      text: "Aquí se muestra la imagen capturada con el jugador.",
+      placement: "bottom"
+    },
+    {
+      selector: ".share",
+      title: "Compartir",
+      text: "En esta parte puedes usar las opciones para compartir la foto.",
+      placement: "top"
+    },
+    {
+      selector: ["#retakeBtn", "#downloadBtn"],
+      title: "Acciones finales",
+      text: "Aquí puedes volver a tomar la foto o descargarla.",
+      placement: "top"
+    }
+  ]
 };
 
-function getCurrentTutorialConfig() {
+const VIDEO_MODAL_TUTORIAL_STEPS = [
+  {
+    selector: "#videoModal .gallery-player-wrap",
+    title: "Reproductor",
+    text: "Aquí se reproduce el video seleccionado.",
+    placement: "top"
+  },
+  {
+    selector: "#videoModal .video-filters",
+    title: "Filtros",
+    text: "En esta parte puedes cambiar el filtro visual del video.",
+    placement: "bottom"
+  },
+  {
+    selector: "#videoModal #closeVideoBtn",
+    title: "Cerrar video",
+    text: "Usa este botón para cerrar el reproductor.",
+    placement: "bottom"
+  }
+];
+
+function getCurrentTutorialSteps() {
   const body = document.body;
   if (!body) return null;
 
-  for (const pageClass of Object.keys(SCREEN_TUTORIALS)) {
+  for (const pageClass of Object.keys(SCREEN_TUTORIAL_STEPS)) {
     if (body.classList.contains(pageClass)) {
-      return SCREEN_TUTORIALS[pageClass];
+      return SCREEN_TUTORIAL_STEPS[pageClass];
     }
   }
 
   return null;
 }
 
-function setupTutorialOverlay() {
-  const config = getCurrentTutorialConfig();
-  if (!config) return;
+function getStepElements(step) {
+  const selectors = Array.isArray(step.selector) ? step.selector : [step.selector];
+
+  return selectors
+    .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+    .filter((el) => {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      return rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+    });
+}
+
+function getUnionRect(elements, padding = 12) {
+  if (!elements.length) return null;
+
+  const rects = elements.map((el) => el.getBoundingClientRect());
+
+  const left = Math.min(...rects.map((r) => r.left)) - padding;
+  const top = Math.min(...rects.map((r) => r.top)) - padding;
+  const right = Math.max(...rects.map((r) => r.right)) + padding;
+  const bottom = Math.max(...rects.map((r) => r.bottom)) + padding;
+
+  return {
+    left: Math.max(8, left),
+    top: Math.max(8, top),
+    width: Math.min(window.innerWidth - 16, right - left),
+    height: Math.min(window.innerHeight - 16, bottom - top)
+  };
+}
+
+function positionTutorialCard(card, rect, placement = "bottom") {
+  const margin = 16;
+  const gap = 18;
+
+  card.style.top = "";
+  card.style.bottom = "";
+  card.style.left = "50%";
+  card.style.transform = "translateX(-50%)";
+
+  const cardRect = card.getBoundingClientRect();
+
+  if (!rect) {
+    card.style.top = `${Math.max(margin, (window.innerHeight - cardRect.height) / 2)}px`;
+    return;
+  }
+
+  if (placement === "top") {
+    const top = rect.top - cardRect.height - gap;
+    if (top >= margin) {
+      card.style.top = `${top}px`;
+      return;
+    }
+  }
+
+  if (placement === "left") {
+    const top = Math.min(
+      window.innerHeight - cardRect.height - margin,
+      Math.max(margin, rect.top + rect.height / 2 - cardRect.height / 2)
+    );
+    card.style.top = `${top}px`;
+    return;
+  }
+
+  const bottomPlacement = rect.top + rect.height + gap;
+  if (bottomPlacement + cardRect.height <= window.innerHeight - margin) {
+    card.style.top = `${bottomPlacement}px`;
+    return;
+  }
+
+  const fallbackTop = Math.max(margin, window.innerHeight - cardRect.height - margin);
+  card.style.top = `${fallbackTop}px`;
+}
+
+function launchTutorialSteps(steps) {
+  if (!steps || !steps.length) return;
+
+  const previous = document.getElementById("tutorialOverlay");
+  if (previous) {
+    previous.remove();
+  }
 
   const overlay = document.createElement("div");
-  overlay.className = "tutorial-overlay";
+  overlay.className = "tutorial-tour";
   overlay.id = "tutorialOverlay";
 
-  const stepsHtml = (config.steps || [])
-    .map((item) => `<li>${item}</li>`)
-    .join("");
-
-  const buttonsHtml = (config.buttons || [])
-    .map((item) => `<li>${item}</li>`)
-    .join("");
-
   overlay.innerHTML = `
-    <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
-      <h2 id="tutorialTitle" class="tutorial-card__title">${config.title}</h2>
-      <p class="tutorial-card__text">${config.text}</p>
+    <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
 
-      <section class="tutorial-card__section">
-        <h3 class="tutorial-card__section-title">Qué debes hacer</h3>
-        <ul class="tutorial-card__list">${stepsHtml}</ul>
-      </section>
-
-      <section class="tutorial-card__section">
-        <h3 class="tutorial-card__section-title">Botones y controles</h3>
-        <ul class="tutorial-card__list">${buttonsHtml}</ul>
-      </section>
+    <div class="tutorial-card" id="tutorialCard" role="dialog" aria-modal="true" aria-labelledby="tutorialStepTitle">
+      <div class="tutorial-card__step" id="tutorialStepCounter"></div>
+      <h2 class="tutorial-card__title" id="tutorialStepTitle"></h2>
+      <p class="tutorial-card__text" id="tutorialStepText"></p>
 
       <div class="tutorial-card__actions">
-        <button id="tutorialAcceptBtn" class="tutorial-card__btn" type="button">Aceptar</button>
+        <button class="tutorial-card__btn" id="tutorialNextBtn" type="button">Siguiente</button>
       </div>
     </div>
   `;
@@ -1071,11 +1195,76 @@ function setupTutorialOverlay() {
   document.body.appendChild(overlay);
   document.body.classList.add("tutorial-lock");
 
-  const acceptBtn = overlay.querySelector("#tutorialAcceptBtn");
-  acceptBtn?.addEventListener("click", () => {
+  const spotlight = overlay.querySelector("#tutorialSpotlight");
+  const card = overlay.querySelector("#tutorialCard");
+  const counter = overlay.querySelector("#tutorialStepCounter");
+  const title = overlay.querySelector("#tutorialStepTitle");
+  const text = overlay.querySelector("#tutorialStepText");
+  const nextBtn = overlay.querySelector("#tutorialNextBtn");
+
+  let currentStepIndex = 0;
+
+  function renderStep() {
+    const step = steps[currentStepIndex];
+    if (!step) return;
+
+    const elements = getStepElements(step);
+    const firstEl = elements[0];
+
+    if (firstEl) {
+      firstEl.scrollIntoView({
+        block: "center",
+        inline: "center",
+        behavior: "smooth"
+      });
+    }
+
+    requestAnimationFrame(() => {
+      const rect = getUnionRect(elements, step.padding ?? 14);
+
+      counter.textContent = `Paso ${currentStepIndex + 1} de ${steps.length}`;
+      title.textContent = step.title;
+      text.textContent = step.text;
+      nextBtn.textContent = currentStepIndex === steps.length - 1 ? "Entendido" : "Siguiente";
+
+      if (rect) {
+        spotlight.style.display = "block";
+        spotlight.style.left = `${rect.left}px`;
+        spotlight.style.top = `${rect.top}px`;
+        spotlight.style.width = `${rect.width}px`;
+        spotlight.style.height = `${rect.height}px`;
+      } else {
+        spotlight.style.display = "none";
+      }
+
+      positionTutorialCard(card, rect, step.placement || "bottom");
+    });
+  }
+
+  function closeTutorial() {
     overlay.remove();
     document.body.classList.remove("tutorial-lock");
+    window.removeEventListener("resize", renderStep);
+  }
+
+  nextBtn.addEventListener("click", () => {
+    if (currentStepIndex >= steps.length - 1) {
+      closeTutorial();
+      return;
+    }
+
+    currentStepIndex += 1;
+    renderStep();
   });
+
+  window.addEventListener("resize", renderStep);
+  renderStep();
+}
+
+function setupTutorialOverlay() {
+  const steps = getCurrentTutorialSteps();
+  if (!steps || !steps.length) return;
+  launchTutorialSteps(steps);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1596,7 +1785,7 @@ async function setupPlayerPage() {
       btn.textContent.toLowerCase().includes("galeria")
     );
 
-  // Si no es la pantalla de jugador, salir
+
   if (
     !playerNameEl &&
     !playerMetaEl &&
@@ -1608,7 +1797,6 @@ async function setupPlayerPage() {
     return;
   }
 
-  // IMPORTANTE: esperar a que se cargue PREGUNTAS.txt
   await ensureTriviaLoaded();
 
   const currentPlayer = readSelectedTriviaPlayer();
@@ -1661,6 +1849,7 @@ function setupVideoGalleryPage() {
   if (!modal || !closeBtn || !player || !title || cards.length === 0) return;
 
   let currentVideoFilter = "normal";
+  let hasShownVideoModalTutorial = false;
 
   let pixelRaf = 0;
   let pixelEnabled = false;
@@ -1788,6 +1977,15 @@ function setupVideoGalleryPage() {
     const playPromise = player.play();
     if (playPromise?.catch) {
       playPromise.catch(() => {});
+    }
+
+    if (!hasShownVideoModalTutorial) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          launchTutorialSteps(VIDEO_MODAL_TUTORIAL_STEPS);
+          hasShownVideoModalTutorial = true;
+        });
+      });
     }
   }
 

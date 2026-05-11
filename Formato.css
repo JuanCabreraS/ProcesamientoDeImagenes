@@ -373,66 +373,61 @@
   overflow: hidden;
 }
 
-.tutorial-overlay{
+.tutorial-tour{
   position: fixed;
   inset: 0;
   z-index: 2147483646;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(5, 8, 20, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  pointer-events: auto;
 }
 
-.tutorial-overlay[hidden]{
+.tutorial-tour[hidden]{
   display: none !important;
 }
 
-.tutorial-card{
-  width: min(92vw, 420px);
-  max-height: min(82vh, 680px);
-  overflow: auto;
+.tutorial-spotlight{
+  position: fixed;
   border-radius: 22px;
-  padding: 18px;
-  background: rgba(255,255,255,0.96);
+  box-shadow: 0 0 0 9999px rgba(5, 8, 20, 0.78);
+  border: 3px solid rgba(25,230,209,0.95);
+  outline: 2px solid rgba(255,255,255,0.22);
+  pointer-events: none;
+  z-index: 1;
+  transition: top .22s ease, left .22s ease, width .22s ease, height .22s ease;
+}
+
+.tutorial-card{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92vw, 390px);
+  z-index: 2;
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  background: rgba(255,255,255,0.97);
   border: 3px solid rgba(25,230,209,0.28);
   box-shadow: 0 24px 60px rgba(0,0,0,0.24);
   color: #0f172a;
 }
 
+.tutorial-card__step{
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(15,23,42,0.55);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+
 .tutorial-card__title{
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 900;
 }
 
 .tutorial-card__text{
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 14px;
   line-height: 1.45;
-  font-weight: 700;
-  color: rgba(15,23,42,0.82);
-}
-
-.tutorial-card__section{
-  margin-top: 14px;
-}
-
-.tutorial-card__section-title{
-  margin: 0 0 8px;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.tutorial-card__list{
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 8px;
-  font-size: 13.5px;
-  line-height: 1.4;
   font-weight: 800;
   color: rgba(15,23,42,0.82);
 }
@@ -440,12 +435,12 @@
 .tutorial-card__actions{
   display: flex;
   justify-content: flex-end;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
 .tutorial-card__btn{
-  min-width: 140px;
-  height: 48px;
+  min-width: 138px;
+  height: 46px;
   border: 0;
   border-radius: 14px;
   font-weight: 900;
