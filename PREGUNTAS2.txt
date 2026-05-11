@@ -346,50 +346,6 @@ B) Alessandro Circati ✅
 C) Craig Goodwin
 D) Jackson Irvine
 
-**Austria
-
-	David Alaba
-¿En qué club español juega actualmente David Alaba, donde ha ganado títulos importantes en Europa?
-
-Opciones:
-A) Atlético de Madrid
-B) Sevilla FC
-C) Real Madrid ✅
-D) FC Barcelona
-
-	Marko Arnautovic
-¿En qué club italiano juega el delantero Marko Arnautović en su etapa más reciente?
-
-Opciones:
-A) AC Milan
-B) Inter Milan ✅
-C) Napoli
-D) Juventus FC
-
-¿En qué posición juega principalmente David Alaba?
-
-Opciones:
-A) Portero
-B) Defensa / mediocampista ✅
-C) Delantero
-D) Extremo derecho
-
-¿Qué jugador austríaco juega actualmente en el Inter Milan?
-
-Opciones:
-A) Konrad Laimer
-B) Marcel Sabitzer
-C) David Alaba
-D) Marko Arnautović ✅
-
-¿Qué futbolista austríaco ha ganado múltiples títulos de Champions League con el Real Madrid?
-
-Opciones:
-A) Christoph Baumgartner
-B) Marko Arnautović
-C) David Alaba ✅
-D) Xaver Schlager
-
 **Bélgica
 
 	Jeremy Doku
@@ -433,50 +389,6 @@ A) Yannick Carrasco
 B) Jeremy Doku ✅
 C) Thomas Meunier
 D) Arthur Vermeeren
-
-**Bosnia
-
-	Edin Džeko
-¿En qué club turco juega actualmente el delantero Edin Džeko?
-
-Opciones:
-A) Galatasaray SK
-B) Fenerbahçe SK ✅
-C) Beşiktaş JK
-D) Trabzonspor
-
-	Esmir Bajraktarevic
-¿En qué liga juega actualmente el joven talento Esmir Bajraktarević?
-
-Opciones:
-A) LaLiga (España)
-B) Serie A (Italia)
-C) Premier League (Inglaterra)
-D) Major League Soccer ✅
-
-¿Qué jugador bosnio juega actualmente en el Fenerbahçe SK?
-
-Opciones:
-A) Miralem Pjanić
-B) Esmir Bajraktarević
-C) Edin Džeko ✅
-D) Rade Krunić
-
-¿En qué posición juega principalmente Edin Džeko?
-
-Opciones:
-A) Portero
-B) Defensa central
-C) Delantero ✅
-D) Mediocampista defensivo
-
-¿Qué joven futbolista bosnio juega actualmente en la Major League Soccer?
-
-Opciones:
-A) Edin Višća
-B) Ermedin Demirović
-C) Sead Kolašinac
-D) Esmir Bajraktarević ✅
 
 **Brasil
 
@@ -565,50 +477,6 @@ B) Almoez Ali
 C) Bassam Al-Rawi
 D) Ró-Ró ✅
 
-**Chequia
-
-	Patrik Schick
-¿En qué club alemán juega actualmente el delantero Patrik Schick?
-
-Opciones:
-A) RB Leipzig
-B) Bayer Leverkusen ✅
-C) Borussia Dortmund
-D) Eintracht Frankfurt
-
-	Tomáš Souček
-¿En qué club inglés juega el mediocampista Tomáš Souček, conocido por su juego aéreo?
-
-Opciones:
-A) Arsenal FC
-B) West Ham United ✅
-C) Chelsea FC
-D) Tottenham Hotspur
-
-¿Qué jugador checo juega actualmente en el Bayer Leverkusen?
-
-Opciones:
-A) Tomáš Souček
-B) Vladimír Coufal
-C) Patrik Schick ✅
-D) Adam Hložek
-
-¿En qué posición juega principalmente Tomáš Souček?
-
-Opciones:
-A) Portero
-B) Mediocampista ✅
-C) Delantero
-D) Lateral izquierdo
-
-¿Qué futbolista checo es conocido por su fortaleza en el juego aéreo con el West Ham United?
-
-Opciones:
-A) Patrik Schick
-B) Antonín Barák
-C) Tomáš Souček ✅
-D) Tomáš Holeš
-
 **Colombia
 	James Rodríguez
 ¿En qué club brasileño jugó recientemente el mediocampista James Rodríguez?
@@ -653,6 +521,7 @@ C) Davinson Sánchez
 D) James Rodríguez ✅
 
 **Costa de Marfil
+	Amad Diallo
 ¿En qué club inglés juega actualmente Amad Diallo?
 
 Opciones:
@@ -1125,49 +994,6 @@ B) Trent Alexander-Arnold
 C) Jude Bellingham ✅
 D) Jack Grealish
 
-**Irak
-	Aymen Hussein
-¿En qué posición juega Aymen Hussein, siendo uno de los principales goleadores de la selección de Irak?
-
-Opciones:
-A) Defensa
-B) Mediocampista
-C) Delantero ✅
-D) Portero
-
-	Zidane Iqbal
-¿En qué club inglés comenzó su carrera profesional Zidane Iqbal?
-
-Opciones:
-A) Liverpool FC
-B) Manchester City
-C) Manchester United ✅
-D) Arsenal FC
-
-¿Qué jugador iraquí es conocido por ser uno de los principales goleadores de su selección?
-
-Opciones:
-A) Zidane Iqbal
-B) Ali Jasim
-C) Aymen Hussein ✅
-D) Jaloliddin Masharipov
-
-¿En qué posición juega principalmente Zidane Iqbal?
-
-Opciones:
-A) Portero
-B) Mediocampista ✅
-C) Defensa central
-D) Delantero
-
-¿Qué futbolista iraquí comenzó su carrera profesional en el Manchester United?
-
-Opciones:
-A) Aymen Hussein
-B) Mohanad Ali
-C) Zidane Iqbal ✅
-D) Ibrahim Bayesh
-
 **Islas de Cabo Verde
 
 	Steven Moreira
@@ -1295,7 +1121,7 @@ D) Mediocampista defensivo
 
 Opciones:
 A) Yazan Al-Naimat
-B) Musa Al-Taamari ✅
+B) Mousa Al-Taamari ✅
 C) Ali Olwan
 D) Ahmad Ersan
 
@@ -1604,50 +1430,6 @@ B) Rafael Leão
 C) Diogo Jota
 D) Bruno Fernandes ✅
 
-**RD Congo
-
-	Chancel Mbemba
-¿En qué club francés juega actualmente el defensor Chancel Mbemba?
-
-Opciones:
-A) AS Monaco
-B) Lille OSC
-C) Olympique Marseille ✅
-D) Paris Saint-Germain
-
-	Cédric Bakambu
-¿En qué posición juega Cédric Bakambu, siendo un referente ofensivo?
-
-Opciones:
-A) Defensa
-B) Mediocampista
-C) Delantero ✅
-D) Portero
-
-¿Qué jugador congoleño juega actualmente en el Olympique Marseille?
-
-Opciones:
-A) Cédric Bakambu
-B) Yoane Wissa
-C) Chancel Mbemba ✅
-D) Arthur Masuaku
-
-¿En qué posición juega principalmente Chancel Mbemba?
-
-Opciones:
-A) Portero
-B) Defensa central ✅
-C) Delantero
-D) Mediocampista ofensivo
-
-¿Qué futbolista de RD Congo es reconocido como un referente ofensivo de su selección?
-
-Opciones:
-A) Chancel Mbemba
-B) Gaël Kakuta
-C) Cédric Bakambu ✅
-D) Meschack Elia
-
 **República de Corea
 
 	Jens Castrop
@@ -1743,7 +1525,7 @@ D) Ali Gholizadeh
 
 Opciones:
 A) Al-Hilal SFC
-B) Al-Nassr FC
+B) Al-Qadisiya FC
 C) Al-Ahli Saudi FC
 D) Al-Nassr FC ✅
 
@@ -1823,50 +1605,6 @@ A) Lyle Foster
 B) Teboho Mokoena
 C) Ronwen Williams ✅
 D) Zakhele Lepasa
-
-**Suecia
-
-	Viktor Gyökeres
-¿En qué club portugués juega actualmente el delantero Viktor Gyökeres?
-
-Opciones:
-A) FC Porto
-B) Sporting CP ✅
-C) SL Benfica
-D) SC Braga
-
-	Roony Bardghji
-¿En qué club danés juega el joven talento Roony Bardghji?
-
-Opciones:
-A) FC Midtjylland
-B) Brøndby IF
-C) FC Copenhagen ✅
-D) Aalborg BK
-
-¿Qué jugador sueco juega actualmente en el Sporting CP?
-
-Opciones:
-A) Alexander Isak
-B) Dejan Kulusevski
-C) Viktor Gyökeres ✅
-D) Emil Forsberg
-
-¿En qué posición juega principalmente Roony Bardghji?
-
-Opciones:
-A) Portero
-B) Defensa central
-C) Extremo / atacante ✅
-D) Mediocampista defensivo
-
-¿Qué joven futbolista sueco juega actualmente en el FC Copenhagen?
-
-Opciones:
-A) Viktor Gyökeres
-B) Jesper Karlsson
-C) Hugo Larsson
-D) Roony Bardghji ✅
 
 **Suiza
 
@@ -1955,50 +1693,6 @@ A) Ismaël Gharbi
 B) Youssef Msakni
 C) Ali Abdi
 D) Sebastian Tounekti ✅
-
-**Turquía
-
-	Arda Güler
-¿En qué club español juega actualmente el mediocampista Arda Güler?
-
-Opciones:
-A) FC Barcelona
-B) Atlético de Madrid
-C) Real Madrid ✅
-D) Sevilla FC
-
-	Kenan Yıldız
-¿En qué club italiano juega el joven talento Kenan Yıldız?
-
-Opciones:
-A) AC Milan
-B) Inter Milan
-C) AS Roma
-D) Juventus FC ✅
-
-¿Qué jugador turco juega actualmente en el Real Madrid?
-
-Opciones:
-A) Hakan Çalhanoğlu
-B) Orkun Kökçü
-C) Arda Güler ✅
-D) Cengiz Ünder
-
-¿En qué posición juega principalmente Kenan Yıldız?
-
-Opciones:
-A) Portero
-B) Defensa central
-C) Delantero / extremo ✅
-D) Mediocampista defensivo
-
-¿Qué joven futbolista turco juega actualmente en la Juventus FC?
-
-Opciones:
-A) Arda Güler
-B) Merih Demiral
-C) İsmail Yüksek
-D) Kenan Yıldız ✅
 
 **Uruguay
 

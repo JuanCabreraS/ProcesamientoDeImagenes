@@ -647,29 +647,13 @@ function parseTriviaTxt(rawText) {
 
     let i = 0;
     const playerNames = [];
+    const directBuckets = {};
+    const remainingQuestions = [];
+    let pendingOwner = null;
 
-    while (i < lines.length && !lines[i].startsWith("¿")) {
-      const line = lines[i].trim();
-
-      if (
-        line &&
-        line !== "Opciones:" &&
-        line !== "Opciones" &&
-        !/^[A-D]\)/.test(line)
-      ) {
-        playerNames.push(line);
-      }
-
-      i += 1;
-    }
-
-    if (playerNames.length < 2) return;
-
-    const questionBlocks = [];
-
-    while (i < lines.length) {
+    function parseQuestionBlock() {
       const questionText = lines[i++];
-      if (!questionText || !questionText.startsWith("¿")) continue;
+      if (!questionText || !questionText.startsWith("¿")) return null;
 
       if (lines[i] === "Opciones:" || lines[i] === "Opciones") {
         i += 1;
@@ -694,17 +678,58 @@ function parseTriviaTxt(rawText) {
         }
       }
 
-      questionBlocks.push({
+      return {
         text: questionText,
         options,
         correctIndex
-      });
+      };
     }
 
-    const assigned = assignQuestionsToPlayers(questionBlocks, playerNames.slice(0, 2));
+    while (i < lines.length) {
+      const line = lines[i];
+
+      const isQuestion = line.startsWith("¿");
+      const isOptionsLabel = line === "Opciones:" || line === "Opciones";
+      const isOptionLine = /^[A-D]\)/.test(line);
+
+      if (!isQuestion && !isOptionsLabel && !isOptionLine) {
+        if (playerNames.length < 2 && !playerNames.includes(line)) {
+          playerNames.push(line);
+          directBuckets[line] = directBuckets[line] || [];
+          pendingOwner = line;
+        }
+        i += 1;
+        continue;
+      }
+
+      if (isQuestion) {
+        const question = parseQuestionBlock();
+        if (!question) continue;
+
+        if (pendingOwner && directBuckets[pendingOwner]) {
+          directBuckets[pendingOwner].push(question);
+          pendingOwner = null;
+        } else {
+          remainingQuestions.push(question);
+        }
+        continue;
+      }
+
+      i += 1;
+    }
+
+    if (playerNames.length < 2) return;
+
+    const inferredBuckets = assignQuestionsToPlayers(
+      remainingQuestions,
+      playerNames.slice(0, 2)
+    );
 
     playerNames.slice(0, 2).forEach((name) => {
-      const questions = [...(assigned[name] || [])];
+      const questions = [
+        ...(directBuckets[name] || []),
+        ...(inferredBuckets[name] || [])
+      ];
 
       while (questions.length < 3) {
         questions.push(buildSecondQuestion(name, teamId));
@@ -760,6 +785,10 @@ async function ensureTriviaLoaded() {
 async function pickRandomTriviaPlayer() {
   await ensureTriviaLoaded();
 
+  if (!TRIVIA_PLAYERS.length) {
+    throw new Error("No se cargaron jugadores de trivia desde PREGUNTAS2.txt");
+  }
+
   const randomIndex = Math.floor(Math.random() * TRIVIA_PLAYERS.length);
   const player = JSON.parse(JSON.stringify(TRIVIA_PLAYERS[randomIndex]));
   saveSelectedTriviaPlayer(player);
@@ -770,7 +799,9 @@ async function pickTriviaPlayerForTeam(teamId) {
   await ensureTriviaLoaded();
 
   const pool = TRIVIA_PLAYERS_BY_TEAM[teamId] || [];
+
   if (!pool.length) {
+    console.warn(`No encontré preguntas para el equipo "${teamId}". Usaré un jugador aleatorio.`);
     return pickRandomTriviaPlayer();
   }
 
@@ -1770,9 +1801,24 @@ function setupMarkerLandingPage(markerScene) {
       return;
     }
 
-    await pickTriviaPlayerForTeam(readSelectedTeam());
-    clearTriviaResult();
-    window.location.href = encodeURI("Pantalla Trivia.html");
+    try {
+      scanBtn.setAttribute("disabled", "disabled");
+      setStatus("Preparando trivia...");
+
+      const selectedTeamId = readSelectedTeam();
+      const player = await pickTriviaPlayerForTeam(selectedTeamId);
+
+      if (!player || !player.questions || !player.questions.length) {
+        throw new Error(`No se pudo preparar la trivia para el equipo "${selectedTeamId}".`);
+      }
+
+      clearTriviaResult();
+      window.location.href = encodeURI("Pantalla Trivia.html");
+    } catch (error) {
+      console.error("Error al abrir la trivia:", error);
+      setStatus("No se pudo abrir la trivia. Revisa PREGUNTAS2.txt y los nombres de equipos.");
+      scanBtn.removeAttribute("disabled");
+    }
   });
 
   window.addEventListener("pageshow", forcePreviewRecovery);
@@ -1799,7 +1845,7 @@ async function setupTriviaPage() {
   const playerCountry = document.querySelector(".player__country");
   const questionMeta = document.querySelector(".card__meta");
   const questionText = document.querySelector(".card__question");
-  const dots = Array.from(document.querySelectorAll(".dot"));
+  const pager = document.querySelector(".pager");
 
   if (
     !confirmBtn ||
@@ -1808,7 +1854,8 @@ async function setupTriviaPage() {
     !playerName ||
     !playerCountry ||
     !questionMeta ||
-    !questionText
+    !questionText ||
+    !pager
   ) {
     return;
   }
@@ -1819,11 +1866,22 @@ async function setupTriviaPage() {
     readSelectedTriviaPlayer() || await pickRandomTriviaPlayer();
 
   const questions = currentPlayer.questions || [];
+  let dots = [];
 
   let currentQuestionIndex = 0;
   let selectedAnswerIndex = null;
   let correctAnswers = 0;
   let locked = false;
+
+  function buildDots() {
+    pager.innerHTML = "";
+    dots = questions.map((_, index) => {
+      const dot = document.createElement("span");
+      dot.className = index === 0 ? "dot dot--active" : "dot";
+      pager.appendChild(dot);
+      return dot;
+    });
+  }
 
   function updateDots() {
     dots.forEach((dot, index) => {
@@ -1929,6 +1987,7 @@ async function setupTriviaPage() {
     }, 1000);
   });
 
+  buildDots();
   renderQuestion();
 }
 
