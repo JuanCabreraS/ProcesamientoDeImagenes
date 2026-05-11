@@ -564,9 +564,69 @@ function buildSecondQuestion(playerName, teamId) {
   };
 }
 
+function normalizeMatchText(text = "") {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getPlayerNameTokens(name = "") {
+  return normalizeMatchText(name)
+    .split(" ")
+    .filter((token) => token.length >= 3);
+}
+
+function getCorrectOptionText(question) {
+  return question?.options?.[question.correctIndex] || "";
+}
+
+function scoreQuestionForPlayer(question, playerName) {
+  const qText = normalizeMatchText(question?.text || "");
+  const correctText = normalizeMatchText(getCorrectOptionText(question));
+  const fullName = normalizeMatchText(playerName);
+  const tokens = getPlayerNameTokens(playerName);
+
+  let score = 0;
+
+  if (fullName && qText.includes(fullName)) score += 10;
+  if (fullName && correctText.includes(fullName)) score += 12;
+
+  tokens.forEach((token) => {
+    if (qText.includes(token)) score += 3;
+    if (correctText.includes(token)) score += 4;
+  });
+
+  return score;
+}
+
+function assignQuestionsToPlayers(questionBlocks, playerNames) {
+  const buckets = Object.fromEntries(playerNames.map((name) => [name, []]));
+
+  questionBlocks.forEach((question) => {
+    let bestPlayer = playerNames[0];
+    let bestScore = -1;
+
+    playerNames.forEach((playerName) => {
+      const score = scoreQuestionForPlayer(question, playerName);
+      if (score > bestScore) {
+        bestScore = score;
+        bestPlayer = playerName;
+      }
+    });
+
+    buckets[bestPlayer].push(question);
+  });
+
+  return buckets;
+}
+
 function parseTriviaTxt(rawText) {
   const sections = rawText
-    .split(/\n(?=\*)/)
+    .split(/\n(?=\*+\s*)/)
     .map((section) => section.trim())
     .filter(Boolean);
 
@@ -581,17 +641,35 @@ function parseTriviaTxt(rawText) {
     const header = lines.shift();
     if (!header) return;
 
-    const teamName = header.replace(/^\*/, "").replace(/:$/, "").trim();
+    const teamName = header.replace(/^\*+/, "").replace(/:$/, "").trim();
     const teamId = TEAM_NAME_TO_ID[teamName];
     if (!teamId) return;
 
     let i = 0;
+    const playerNames = [];
+
+    while (i < lines.length && !lines[i].startsWith("¿")) {
+      const line = lines[i].trim();
+
+      if (
+        line &&
+        line !== "Opciones:" &&
+        line !== "Opciones" &&
+        !/^[A-D]\)/.test(line)
+      ) {
+        playerNames.push(line);
+      }
+
+      i += 1;
+    }
+
+    if (playerNames.length < 2) return;
+
+    const questionBlocks = [];
 
     while (i < lines.length) {
-      const name = lines[i++];
-      if (!name || name.startsWith("¿") || name.startsWith("Opciones")) continue;
-
-      const text = lines[i++] || "";
+      const questionText = lines[i++];
+      if (!questionText || !questionText.startsWith("¿")) continue;
 
       if (lines[i] === "Opciones:" || lines[i] === "Opciones") {
         i += 1;
@@ -616,22 +694,31 @@ function parseTriviaTxt(rawText) {
         }
       }
 
+      questionBlocks.push({
+        text: questionText,
+        options,
+        correctIndex
+      });
+    }
+
+    const assigned = assignQuestionsToPlayers(questionBlocks, playerNames.slice(0, 2));
+
+    playerNames.slice(0, 2).forEach((name) => {
+      const questions = [...(assigned[name] || [])];
+
+      while (questions.length < 3) {
+        questions.push(buildSecondQuestion(name, teamId));
+      }
+
       players.push({
         id: normalizePlayerId(name),
         teamId,
         name,
         shortName: name,
         meta: TEAM_CONFIG[teamId]?.label || teamName,
-        questions: [
-          {
-            text,
-            options,
-            correctIndex
-          },
-          buildSecondQuestion(name, teamId)
-        ]
+        questions: questions.slice(0, 3)
       });
-    }
+    });
   });
 
   TRIVIA_PLAYERS = players;
@@ -651,10 +738,10 @@ async function ensureTriviaLoaded() {
   if (TRIVIA_PLAYERS.length) return;
   if (triviaLoadPromise) return triviaLoadPromise;
 
-  triviaLoadPromise = fetch("PREGUNTAS.txt?v=2")
+  triviaLoadPromise = fetch("PREGUNTAS2.txt?v=2")
     .then((response) => {
       if (!response.ok) {
-        throw new Error("No se pudo cargar PREGUNTAS.txt");
+        throw new Error("No se pudo cargar PREGUNTAS2.txt");
       }
       return response.text();
     })
